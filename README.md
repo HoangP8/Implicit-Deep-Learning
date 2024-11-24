@@ -31,6 +31,7 @@ Project
 - [x] Code structure Phase 1
 - [x] Docstring all functions Phase 1
 - [x] Reorganize the code following the structure Phase 1
+- [ ] Update the code for Computer Vision task and Vision Transformer architecture
 - [ ] Code structure Phase 2
 - [ ] Docstring all functions Phase 2
 - [ ] Reorganize the code following the structure Phase 2
