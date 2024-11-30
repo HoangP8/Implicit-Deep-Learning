@@ -29,9 +29,6 @@ build/
 .DS_Store
 Thumbs.db
 
-checkpoints/
-data_raw/
-
 *.png
 *.pt
 *.pth
