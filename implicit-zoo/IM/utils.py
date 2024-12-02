@@ -41,7 +41,7 @@ def get_test_accuracy(model, loss_fn, test_loader, device):
     return avg_loss, accuracy
 
 
-def train(model, train_loader, test_loader, optimizer, loss_fn, num_epochs, log_dir, device):
+def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs, log_dir, device):
     """
     Trains the model for a specified number of epochs and logs the results.
 
@@ -66,6 +66,10 @@ def train(model, train_loader, test_loader, optimizer, loss_fn, num_epochs, log_
         os.makedirs(log_dir)
     log_file = os.path.join(log_dir, f"{timestamp}.log")
     with open(log_file, 'w') as f:
+        f.write("Arguments:\n")
+        for arg, value in vars(args).items():
+            f.write(f"{arg}: {value}\n")
+        f.write("\n")
         f.write("Epoch,Train Loss,Train Accuracy,Test Loss,Test Accuracy\n")
 
     # Training loop
@@ -122,6 +126,9 @@ def train(model, train_loader, test_loader, optimizer, loss_fn, num_epochs, log_
             f.write(f"Epoch {epoch + 1}/{num_epochs}: "
                     f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
                     f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%\n")
-        print("-" * 50)
+
+        with open(log_file, 'a') as f:
+            f.write("-" * 100 + "\n")
+        print("-" * 100)
 
     return model, log_file

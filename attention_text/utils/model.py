@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchdeq import get_deq, reset_deq
+from torchdeq import get_deq
 
 class Head(nn.Module):
     """
@@ -139,10 +139,13 @@ class IDLHead(nn.Module):
             q = pre_X[:, :, self.hs : self.hs * 2]
             v = pre_X[:, :, self.hs * 2 : self.hs * 3]
 
-            wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
-            wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-            wei = F.softmax(wei, dim=-1)
-            out = wei @ v
+            k_norm = torch.cdist(q, k, p=2) ** 2
+            wei = torch.exp(-k_norm)
+            wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
+            denom = 0.25 + wei.sum(dim=-1, keepdim=True)
+            wei = wei / denom
+            w_map = v / torch.sqrt(v ** 2 + 1)
+            out = wei @ w_map
             return torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
             
         X_out, info = self.deq(deq_func, X)
@@ -155,19 +158,19 @@ class IDLHead(nn.Module):
         #     q = pre_X[:, :, self.hs : self.hs * 2]
         #     v = pre_X[:, :, self.hs * 2 : self.hs * 3]
 
-        #     wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
-        #     wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-        #     wei = F.softmax(wei, dim=-1)
-        #     out = wei @ v
+            wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
+            wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
+            wei = F.softmax(wei, dim=-1)
+            out = wei @ v
 
         #     # Lipschitz Attention
-        #     # k_norm = torch.cdist(q, k, p=2) ** 2
-        #     # wei = torch.exp(-k_norm)
-        #     # wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
-        #     # denom = 0.25 + wei.sum(dim=-1, keepdim=True)
-        #     # wei = wei / denom
-        #     # w_map = v / torch.sqrt(v ** 2 + 1)
-        #     # out = wei @ w_map
+            k_norm = torch.cdist(q, k, p=2) ** 2
+            wei = torch.exp(-k_norm)
+            wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
+            denom = 0.25 + wei.sum(dim=-1, keepdim=True)
+            wei = wei / denom
+            w_map = v / torch.sqrt(v ** 2 + 1)
+            out = wei @ w_map
 
         #     post_X = torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
         #     if torch.allclose(post_X, X, atol=1e-6):
