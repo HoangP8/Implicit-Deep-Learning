@@ -33,6 +33,34 @@ Project
 └─ 📃introduction.ipynb                    
 ```
 
+## Interface
+
+Here’s a sample usage of the `ImplicitModel` within our framework:
+
+```python
+from .idl.implicit_base_model import ImplicitModel
+
+# Normal data processing
+train_loader, test_loader = ...  # Load your training and testing data
+
+# Define the Implicit Model
+model = ImplicitModel(hidden_dim=..., input_dim=..., output_dim=...,
+                      low_rank=T/F, rank=...,
+                      mitr=..., grad_mitr=..., tol=..., grad_tol=...,
+                      f=ImplicitFunctionInf)
+
+# Normal optimization loop
+optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
+loss_fn = ...    # Choose loss function (e.g., Cross-Entropy, MSE)
+
+for _ in range(epoch):  # Training loop
+    optimizer.zero_grad() 
+    loss.backward()  
+    optimizer.step()  
+    ...
+```
+
+
 ## TODO
 
 - [ ] Code sim core functions.
