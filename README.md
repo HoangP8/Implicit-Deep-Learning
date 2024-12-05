@@ -9,14 +9,8 @@ Below is the projects' repository structure:
 Project
 ├─ 📂implicit-zoo                    
 │   ├─ 📂implicit-model 
-│   │   ├─ 📂dataset
-│   │   └─ 📃main.py 
 │   ├─ 📂SIM
-│   │   ├─ 📂dataset
-│   │   └─ 📃main.py 
 │   └─ 📂implicit-attention 
-│       ├─ 📂dataset
-│       └─ 📃main.py
 │   
 ├─ 📂implicit-model
 │   ├─ 📃get_model.py
