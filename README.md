@@ -41,7 +41,7 @@ Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN`` within our fra
 from .idl.implicit_base_model import ImplicitModel
 
 # Normal data processing
-train_loader, test_loader = ...  (e.g., CIFAR10, time-series, ...)
+train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
 
 # Define the Implicit Model
 model = ImplicitModel(hidden_dim=..., input_dim=..., output_dim=...,
