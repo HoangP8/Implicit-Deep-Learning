@@ -67,14 +67,20 @@ model = ImplicitModel(hidden_dim=100, input_dim=3072, output_dim=10, low_rank=Tr
 
 ## TODO
 
-- [ ] Code sim core functions.
-- [ ] Code im core functions.
-- [ ] Infer + Check core functions
-- [ ] Merge im core functions with Attention examples
-- [ ] Implicit-zoo
-   - [ ] im
-   - [ ] sim
-   - [ ] attention
-- [ ] Infer + Check zoo
-- [ ] Docstring
+- [x] Code SIM core functions.
+- [x] Code Implicit core functions.
+   - [x] Implicit model + LoRa
+   - [x] Implicit RNN model + LoRa
+- [x] Code examples for `im` and `im_rnn` 
+   - [x] Refactor Time-series data processing + training
+   - [x] Test Inference + Debug   
+- [ ] Refactor `im_attention` example (4 days)
+   - [ ] Flexibility in base self-attention and Lipschitz version
+   - [ ] Refactor the functions effectively
+   - [ ] Users can use easily
+- [ ] Refactor `sim` example (4 days)
+   - [ ] Get different solvers
+   - [ ] Different experiments
+- [ ] Docstring (Important) (1 week)
+- [ ] Debug, check, and test (1 week)
 
