@@ -27,7 +27,7 @@ def load_data(args):
         raise ValueError(f"Unsupported dataset: {args.dataset}")
     
     # Create DataLoaders
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
     
     return train_loader, test_loader

@@ -4,16 +4,31 @@ import numpy as np
 import warnings
 import torch
 
+def transpose(X):
+    """
+    Convenient function to transpose a matrix.
+    """
+    assert len(X.size()) == 2, "data must be 2D"
+    return X.T
+
+
+def project_onto_Linf_ball(A, v):
+    norm_inf_A = torch.linalg.matrix_norm(A, ord=float('inf')) 
+    if norm_inf_A > v:
+        A = (v / norm_inf_A) * A
+    return A
+
+
 class ImplicitFunctionWarning(RuntimeWarning):
     pass
 
 class ImplicitFunction(Function):
     mitr = grad_mitr = 300
     tol = grad_tol = 3e-6
-    activation = 'relu'
+    v = 0.95
     
     @classmethod
-    def set_parameters(cls, mitr=None, grad_mitr=None, tol=None, grad_tol=None, activation=None):
+    def set_parameters(cls, mitr=None, grad_mitr=None, tol=None, grad_tol=None, v=None):
         if mitr is not None:
             cls.mitr = mitr
         if grad_mitr is not None:
@@ -22,9 +37,9 @@ class ImplicitFunction(Function):
             cls.tol = tol
         if grad_tol is not None:
             cls.grad_tol = grad_tol
-        if activation is not None:
-            cls.activation = activation
-
+        if v is not None:
+            cls.v = v                    
+    
     @classmethod
     def forward(cls, ctx, A, B, X0, U):
         with torch.no_grad():
@@ -51,31 +66,15 @@ class ImplicitFunction(Function):
 
         return grad_A, grad_B, torch.zeros_like(X), grad_U
 
-    @classmethod
-    def phi(cls, X):
-        """ Activation function phi (either ReLU or SiLU based on class-level activation setting). """
-        
-        if ImplicitFunction.activation == 'relu':
-            return torch.clamp(X, min=0)
-        elif ImplicitFunction.activation == 'silu':
-            return X * torch.sigmoid(X)
-        else:
-            raise ValueError(f"Unknown activation function: {ImplicitFunction.activation}")
+    @staticmethod
+    def phi(X):
+        return torch.clamp(X, min=0)
 
-    @classmethod
-    def dphi(cls, X):
-        """ Derivative of the activation function dphi (for ReLU or SiLU). """
-        
-        if ImplicitFunction.activation == 'relu':
-            grad = X.new_zeros(X.shape)
-            grad[X > 0] = 1
-            return grad
-        elif ImplicitFunction.activation == 'silu':
-            grad = X.clone().detach()
-            sigmoid = torch.sigmoid(grad)
-            return sigmoid * (1 + grad * (1 - sigmoid))
-        else:
-            raise ValueError(f"Unknown activation function: {ImplicitFunction.activation}")
+    @staticmethod
+    def dphi(X):
+        grad = X.new_zeros(X.shape)
+        grad[X > 0] = 1
+        return grad
 
     @classmethod
     def inn_pred(cls, A, Z, X, mitr, tol):
@@ -130,12 +129,5 @@ class ImplicitFunctionInf(ImplicitFunction):
     def forward(cls, ctx, A, B, X0, U):
 
         # project A on |A|_inf=v
-        v = 0.95
-
-        norm_inf_A = torch.linalg.matrix_norm(A, ord=float('inf')) 
-        if (norm_inf_A > v):
-            A = (v * A) / norm_inf_A
-        else:
-            pass
-        
+        A = project_onto_Linf_ball(A, cls.v)
         return super(ImplicitFunctionInf, cls).forward(ctx, A, B, X0, U)

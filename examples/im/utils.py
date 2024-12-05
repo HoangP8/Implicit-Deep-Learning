@@ -41,7 +41,7 @@ def get_test_accuracy(model, loss_fn, test_loader, device):
     return avg_loss, accuracy
 
 
-def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs, log_dir, device):
+def train(args, model, train_loader, test_loader, optimizer, loss_fn, log_dir, device):
     """
     Trains the model for a specified number of epochs and logs the results.
 
@@ -70,10 +70,12 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs
         for arg, value in vars(args).items():
             f.write(f"{arg}: {value}\n")
         f.write("\n")
+        f.write(f'Model size: {sum(p.numel() for p in model.parameters())} parameters\n')
+        f.write("\n")
         f.write("Epoch,Train Loss,Train Accuracy,Test Loss,Test Accuracy\n")
 
     # Training loop
-    for epoch in range(num_epochs):
+    for epoch in range(args.epochs):
         model.train()  # train mode
         train_loss = 0.0
         correct_train = 0
@@ -102,13 +104,13 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs
             if batch_idx % 100 == 0:
                 test_loss, test_accuracy = get_test_accuracy(model, loss_fn, test_loader, device)
 
-                print(f"Epoch {epoch + 1}/{num_epochs} - "
+                print(f"Epoch {epoch + 1}/{args.epochs} - "
                       f"Batch {batch_idx + 1}/{total_batches}: "
                       f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
                       f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%")
 
                 with open(log_file, 'a') as f:
-                    f.write(f"Epoch {epoch + 1}/{num_epochs} - "
+                    f.write(f"Epoch {epoch + 1}/{args.epochs} - "
                             f"Batch {batch_idx + 1}/{total_batches}: "
                             f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
                             f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%\n")
@@ -119,11 +121,11 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs
         train_accuracy = (correct_train / total_train) * 100
         test_loss, test_accuracy = get_test_accuracy(model, loss_fn, test_loader, device)
 
-        print(f"Epoch {epoch + 1}/{num_epochs}: "
+        print(f"Epoch {epoch + 1}/{args.epochs}: "
               f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
               f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%")
         with open(log_file, 'a') as f:
-            f.write(f"Epoch {epoch + 1}/{num_epochs}: "
+            f.write(f"Epoch {epoch + 1}/{args.epochs}: "
                     f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
                     f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%\n")
 
