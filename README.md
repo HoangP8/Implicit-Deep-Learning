@@ -12,7 +12,7 @@ Project
 │   │   ├─ 📃data.py (MNIST and CIFAR10)
 │   │   └─ 📃main.py 
 │   ├─ 📂im_rnn
-│   │   ├─ 📃data.py (time-series synthetic dataset)
+│   │   ├─ 📃data.py (time-series dataset)
 │   │   └─ 📃main.py 
 │   ├─ 📂im_attention
 │   │   ├─ 📃data.py
@@ -60,6 +60,16 @@ for _ in range(epoch):
     ...
 ```
 
+- By default, the parameters `mitr=grad_mitr=300`, and `tol=grad_tol=3e-6`.
+- The default value of `low_rank` is `False`, meaning the model is full rank by default. Users can easily switch to a low-rank version.
+- Users need to define `hidden_dim` for the implicit model. The `input_dim` represents the input dimension vector; similarly for `output_dim`.
+- Default function `f=ImplicitFunctionInf` is the wellposedness condition (L_infty norm of matrix A)
+- Example CIFAR-10, use `input_dim=3*32*32=3072` for the 32x32 RGB images and `output_dim=10` for 10 classes.
+- We want a low-rank Implicit model with `hidden_dim=100`:
+
+```python
+model = ImplicitModel(hidden_dim=100, input_dim=3072, output_dim=10, low_rank=True, rank=2)
+```
 
 ## TODO
 
