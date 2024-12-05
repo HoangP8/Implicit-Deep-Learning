@@ -3,29 +3,32 @@ IM + SIM + Attention
 
 ## Project Structure
 
-Below is the projects' repository structure:
+Below is the project's repository structure:
 
 ```plaintext 
 Project
-├─ 📂implicit-zoo                    
-│   ├─ 📂implicit-model 
-│   │   ├─ 📂dataset
+├─ 📂examples                    
+│   ├─ 📂im 
+│   │   ├─ 📃data.py (MNIST and CIFAR10)
 │   │   └─ 📃main.py 
-│   ├─ 📂SIM
-│   │   ├─ 📂dataset
+│   ├─ 📂im_rnn
+│   │   ├─ 📃data.py (time-series synthetic dataset)
 │   │   └─ 📃main.py 
-│   └─ 📂implicit-attention 
-│       ├─ 📂dataset
-│       └─ 📃main.py
+│   ├─ 📂im_attention
+│   │   ├─ 📃data.py
+│   │   └─ 📃main.py 
+│   └─ 📂SIM
+│   │   ├─ 📃data.py
+│   │   └─ 📃main.py 
 │   
-├─ 📂implicit-model
-│   ├─ 📃get_model.py
-│   └─ 📃IM_Class.py
+├─ 📂idl
+│   ├─ 📃base_function.py
+│   ├─ 📃ImplicitModel.py
+│   └─ 📃ImplicitRNN.py
 │ 
 ├─ 📂sim
-│   ├─ 📃get_model.py
-│   ├─ 📃SIM_Class.py
-│   └─ 📃get_solver.py 
+│   ├─ 📃base_function.py
+│   └─ 📃SIM.py
 │  
 └─ 📃introduction.ipynb                    
 ```
