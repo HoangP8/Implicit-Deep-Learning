@@ -9,17 +9,9 @@ Below is the project's repository structure:
 Project
 ├─ 📂examples                    
 │   ├─ 📂im 
-│   │   ├─ 📃data.py (MNIST and CIFAR10)
-│   │   └─ 📃main.py 
 │   ├─ 📂im_rnn
-│   │   ├─ 📃data.py (time-series dataset)
-│   │   └─ 📃main.py 
 │   ├─ 📂im_attention
-│   │   ├─ 📃data.py
-│   │   └─ 📃main.py 
 │   └─ 📂SIM
-│   │   ├─ 📃data.py
-│   │   └─ 📃main.py 
 │   
 ├─ 📂idl
 │   ├─ 📃base_function.py
