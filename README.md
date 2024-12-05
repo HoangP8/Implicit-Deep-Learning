@@ -35,13 +35,13 @@ Project
 
 ## Interface
 
-Here’s a sample usage of the `ImplicitModel` within our framework:
+Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN`` within our framework:
 
 ```python
 from .idl.implicit_base_model import ImplicitModel
 
 # Normal data processing
-train_loader, test_loader = ...  # Load your training and testing data
+train_loader, test_loader = ...  (e.g., CIFAR10, time-series, ...)
 
 # Define the Implicit Model
 model = ImplicitModel(hidden_dim=..., input_dim=..., output_dim=...,
@@ -49,11 +49,11 @@ model = ImplicitModel(hidden_dim=..., input_dim=..., output_dim=...,
                       mitr=..., grad_mitr=..., tol=..., grad_tol=...,
                       f=ImplicitFunctionInf)
 
-# Normal optimization loop
+# Normal training loop
 optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
 loss_fn = ...    # Choose loss function (e.g., Cross-Entropy, MSE)
 
-for _ in range(epoch):  # Training loop
+for _ in range(epoch): 
     optimizer.zero_grad() 
     loss.backward()  
     optimizer.step()  
