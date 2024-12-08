@@ -132,38 +132,38 @@ class IDLHead(nn.Module):
                 self.A /= torch.linalg.matrix_norm(self.A, ord=float('inf'))
                 self.A *= 0.95
 
-        def deq_func(X):
-            pre_X = torch.einsum("bik,kj->bij", X, self.A) + B_U      # Matrix Multp
-            
-            k = pre_X[:, :, : self.hs]
-            q = pre_X[:, :, self.hs : self.hs * 2]
-            v = pre_X[:, :, self.hs * 2 : self.hs * 3]
-
-            k_norm = torch.cdist(q, k, p=2) ** 2
-            wei = torch.exp(-k_norm)
-            wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
-            denom = 0.25 + wei.sum(dim=-1, keepdim=True)
-            wei = wei / denom
-            w_map = v / torch.sqrt(v ** 2 + 1)
-            out = wei @ w_map
-            return torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
-            
-        X_out, info = self.deq(deq_func, X)
-        X = X_out[-1]
-        # for _ in range(self.fixed_point_iter):
-        #     # pre_X = torch.einsum("ij,bij->bij", self.A[:T, :], X) + B_U   # Hadamard 
-        #     pre_X = torch.einsum("bik,kj->bij", X, self.A[:, :]) + B_U      # Matrix Multp
+        # def deq_func(X):
+        #     pre_X = torch.einsum("bik,kj->bij", X, self.A) + B_U      # Matrix Multp
             
         #     k = pre_X[:, :, : self.hs]
         #     q = pre_X[:, :, self.hs : self.hs * 2]
         #     v = pre_X[:, :, self.hs * 2 : self.hs * 3]
+
+        #     k_norm = torch.cdist(q, k, p=2) ** 2
+        #     wei = torch.exp(-k_norm)
+        #     wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
+        #     denom = 0.25 + wei.sum(dim=-1, keepdim=True)
+        #     wei = wei / denom
+        #     w_map = v / torch.sqrt(v ** 2 + 1)
+        #     out = wei @ w_map
+        #     return torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
+            
+        # X_out, info = self.deq(deq_func, X)
+        # X = X_out[-1]
+        for _ in range(self.fixed_point_iter):
+            # pre_X = torch.einsum("ij,bij->bij", self.A[:T, :], X) + B_U   # Hadamard 
+            pre_X = torch.einsum("bik,kj->bij", X, self.A[:, :]) + B_U      # Matrix Multp
+        
+            k = pre_X[:, :, : self.hs]
+            q = pre_X[:, :, self.hs : self.hs * 2]
+            v = pre_X[:, :, self.hs * 2 : self.hs * 3]
 
             wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
             wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
             wei = F.softmax(wei, dim=-1)
             out = wei @ v
 
-        #     # Lipschitz Attention
+            # Lipschitz Attention
             k_norm = torch.cdist(q, k, p=2) ** 2
             wei = torch.exp(-k_norm)
             wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
@@ -172,10 +172,10 @@ class IDLHead(nn.Module):
             w_map = v / torch.sqrt(v ** 2 + 1)
             out = wei @ w_map
 
-        #     post_X = torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
-        #     if torch.allclose(post_X, X, atol=1e-6):
-        #         break
-        #     X = post_X
+            post_X = torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
+            if torch.allclose(post_X, X, atol=1e-6):
+                break
+            X = post_X
 
         return X[:, :, self.hs * 3 :]
 

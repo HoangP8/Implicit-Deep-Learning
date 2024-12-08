@@ -15,7 +15,7 @@ class ImplicitModel(nn.Module):
                  tol: Optional[float] = 3e-6,
                  grad_tol: Optional[float] = 3e-6,
                  v: Optional[float] = 0.95,
-                 low_rank: Optional[bool] = False,
+                 is_low_rank: Optional[bool] = False,
                  rank: Optional[int] = None):
         """
         Create a new Implicit Model:
@@ -34,8 +34,8 @@ class ImplicitModel(nn.Module):
         """
         super(ImplicitModel, self).__init__()
 
-        if low_rank and rank is None:
-            raise ValueError("Parameter 'k' is required when 'low_rank' is True.")
+        if is_low_rank and rank is None:
+            raise ValueError("Parameter 'k' is required when 'is_low_rank' is True.")
 
         if bias:
             input_dim += 1
@@ -43,9 +43,9 @@ class ImplicitModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.low_rank = low_rank
+        self.is_low_rank = is_low_rank
         
-        if self.low_rank:
+        if self.is_low_rank:
             self.L = nn.Parameter(torch.randn(hidden_dim, rank)/hidden_dim)
             self.R = nn.Parameter(torch.randn(hidden_dim, rank)/hidden_dim)     
         else:
@@ -77,7 +77,7 @@ class ImplicitModel(nn.Module):
         else:
             X0 = torch.zeros(X_shape, dtype=U.dtype, device=U.device)
 
-        if self.low_rank:
+        if self.is_low_rank:
             L_projected = project_onto_Linf_ball(self.L, self.f.v)
             RT_projected = project_onto_Linf_ball(transpose(self.R), self.f.v)
             X = self.f.apply(L_projected @ RT_projected, self.B, X0, U)

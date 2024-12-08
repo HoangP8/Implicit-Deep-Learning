@@ -20,8 +20,8 @@ def parse_args():
     parser.add_argument('--lr', type=float, default=5e-3, help="Learning rate for the optimizer")
     parser.add_argument('--device', type=int, default=0, help="Specify the device id (e.g., 0 for cuda:0)")
     
-    parser.add_argument('--low_rank', type=bool, default=False, help="Whether to use low rank approximation (True/False)")
-    parser.add_argument('--rank', type=int, default=1, help="Rank for low rank approximation (used only if low_rank is True)")
+    parser.add_argument('--is_low_rank', type=bool, default=False, help="Whether to use low rank approximation (True/False)")
+    parser.add_argument('--rank', type=int, default=1, help="Rank for low rank approximation (used only if is_low_rank is True)")
     parser.add_argument('--mitr', type=int, default=300, help="Max iterations")
     parser.add_argument('--grad_mitr', type=int, default=300, help="Max gradient iterations")
     parser.add_argument('--tol', type=float, default=3e-6, help="Tolerance for convergence")
@@ -47,7 +47,7 @@ def main():
 
     model = ImplicitModel(hidden_dim=args.hidden_dim, input_dim=input_dim, output_dim=output_dim,
                           mitr=args.mitr, grad_mitr=args.grad_mitr, tol=args.tol, grad_tol=args.grad_tol, v=args.v,
-                          low_rank=args.low_rank, rank=args.rank)
+                          is_low_rank=args.is_low_rank, rank=args.rank)
     print(f'Model size: {sum(p.numel() for p in model.parameters())} parameters')
     
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
