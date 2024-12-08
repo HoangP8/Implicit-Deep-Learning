@@ -57,10 +57,4 @@ def netflix_dataset(look_back):
     y_train = torch.from_numpy(y_train).type(torch.Tensor)
     y_test = torch.from_numpy(y_test).type(torch.Tensor)
     
-    
-    print('x_train.shape = ',x_train.shape)
-    print('y_train.shape = ',y_train.shape)
-    print('x_test.shape = ',x_test.shape)
-    print('y_test.shape = ',y_test.shape)
-
     return x_train, x_test, y_train, y_test
