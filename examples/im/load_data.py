@@ -3,7 +3,10 @@ from torch.utils.data import DataLoader
 import torch
 
 def load_data(args):
-
+    """
+    Load training and testing data loaders for the specified dataset.
+    """
+    
     # MNIST Dataset
     if args.dataset == 'mnist':
         transform = transforms.Compose([

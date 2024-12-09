@@ -2,6 +2,9 @@ from .netflix_stock import netflix_dataset
 from .spiky_data import spiky_synthetic_dataset
 
 def load_data(args):
+    """
+    Load training and testing data loaders for the specified dataset.
+    """
 
     # Netflix Dataset
     if args.dataset == 'netflix':
@@ -14,4 +17,4 @@ def load_data(args):
     else:
         raise ValueError(f"Unsupported dataset: {args.dataset}")
     
-    return x_train, x_test, y_train, y_test 
+    return x_train, x_test, y_train, y_test

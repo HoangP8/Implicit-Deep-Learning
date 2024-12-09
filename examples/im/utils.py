@@ -4,16 +4,27 @@ import os
 
 def transpose(X):
     """
-    Convenient function to transpose a matrix.
+    Transpose a 2D matrix.
     """
+    
     assert len(X.size()) == 2, "data must be 2D"
     return X.T
 
 
 def get_test_accuracy(model, loss_fn, test_loader, device):
     """
-    Run the model with the test dataset and compute the loss and accuracy.
+    Evaluate the model on the test dataset and compute loss and accuracy.
+
+    Args:
+        model (torch.nn.Module): The trained model to evaluate.
+        loss_fn (torch.nn.Module): The loss function used for evaluation.
+        test_loader (DataLoader): DataLoader for the test dataset.
+        device (torch.device): Device to perform computation on (CPU or GPU).
+
+    Returns:
+        Tuple[float, float]: Average loss and accuracy on the test dataset.
     """
+    
     model.eval() # eval mode
     total_loss = 0.0
     correct_predictions = 0
@@ -43,20 +54,20 @@ def get_test_accuracy(model, loss_fn, test_loader, device):
 
 def train(args, model, train_loader, test_loader, optimizer, loss_fn, log_dir, device):
     """
-    Trains the model for a specified number of epochs and logs the results.
+    Trains the model and logs the results.
 
     Args:
+        args: Configuration object with training parameters.
         model (torch.nn.Module): The model to train.
-        train_loader (torch.utils.data.DataLoader): The training data loader.
-        test_loader (torch.utils.data.DataLoader): The test data loader.
+        train_loader (DataLoader): DataLoader for the training dataset.
+        test_loader (DataLoader): DataLoader for the test dataset.
         optimizer (torch.optim.Optimizer): The optimizer used for training.
-        loss_fn (torch.nn.Module): The loss function to minimize.
-        num_epochs (int): The number of epochs to train the model.
-        log_dir (str): The base directory to save log files.
-        device (torch.device, optional): The device (CPU or GPU) to perform training on.
-
+        loss_fn (torch.nn.Module): Loss function to minimize.
+        log_dir (str): Directory to save log files.
+        device (torch.device): Device to perform training on (CPU or GPU).
+        
     Returns:
-        tuple: The trained model and the log file path.
+        Tuple[torch.nn.Module, str]: The trained model and the path to the log file.
     """
 
     model.to(device)
@@ -95,12 +106,14 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, log_dir, d
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
+            
+            # Compute training accuracy
             predicted_labels = torch.argmax(predictions, dim=-1)
             correct_train += (predicted_labels == targets).sum().item()
             total_train += targets.size(0)
             train_loss += loss.item()
 
+            # Log every 100 batches
             if batch_idx % 100 == 0:
                 test_loss, test_accuracy = get_test_accuracy(model, loss_fn, test_loader, device)
 
@@ -117,10 +130,12 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, log_dir, d
 
             batch_idx += 1
 
+        # Compute average training metrics for each epoch
         avg_train_loss = train_loss / len(train_loader)
         train_accuracy = (correct_train / total_train) * 100
         test_loss, test_accuracy = get_test_accuracy(model, loss_fn, test_loader, device)
 
+        # Log epoch results
         print(f"Epoch {epoch + 1}/{args.epochs}: "
               f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
               f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%")

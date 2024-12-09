@@ -6,6 +6,34 @@ from .implicit_function import ImplicitFunctionInf, ImplicitFunction, transpose,
 
 
 class ImplicitModel(nn.Module):
+    """
+    Creates an Implicit Model with:
+        A: hidden_dim * hidden_dim
+        B: hidden_dim * input_dim
+        C: output_dim * hidden_dim
+        D: output_dim * input_dim (if `no_D` is False)
+        X: hidden_dim * batch_size
+        U: input_dim * batch_size
+
+    Note that for X and U, the batch size comes first when inputting into the model.
+    These sizes reflect that the model internally transposes them so that their sizes line up with ABCD.
+
+    Args:
+        hidden_dim (int): Number of hidden features.
+        input_dim (int): Number of input features.
+        output_dim (int): Number of output features.
+        f (ImplicitFunction, optional): The implicit function to use (default: ImplicitFunctionInf for well-posedness).
+        no_D (bool, optional): Whether to exclude matrix D (default: False).
+        bias (bool, optional): Whether to include a bias term (default: False).
+        mitr (int, optional): Max iterations for the forward pass. (default: 300).
+        grad_mitr (int, optional): Max iterations for gradient computation. (default: 300).
+        tol (float, optional): Convergence tolerance for the forward pass. (default: 3e-6).
+        grad_tol (float, optional): Convergence tolerance for gradients. (default: 3e-6).
+        v (float, optional): Radius of the L-infinity norm ball for projection. (default: 0.95).
+        is_low_rank (bool, optional): Whether to use low-rank approximation (default: False).
+        rank (int, optional): Rank for low-rank approximation (required if `is_low_rank` is True).
+    """
+
     def __init__(self, hidden_dim: int, input_dim: int, output_dim: int,
                  f: Optional[ImplicitFunction] = ImplicitFunctionInf,
                  no_D: Optional[bool] = False,
@@ -17,21 +45,6 @@ class ImplicitModel(nn.Module):
                  v: Optional[float] = 0.95,
                  is_low_rank: Optional[bool] = False,
                  rank: Optional[int] = None):
-        """
-        Create a new Implicit Model:
-            A: n*n  B: n*p  C: q*n  D: q*p
-            X: n*m  U: p*m, m = batch size
-            Note that for X and U, the batch size comes first when inputting into the model.
-            These sizes reflect that the model internally transposes them so that their sizes line up with ABCD.
-        
-        Args:
-            n: the number of hidden features.
-            p: the number of input features.
-            q: the number of output classes.
-            f: the implicit function to use.
-            no_D: whether or not to use the D matrix (i.e., whether the prediction equation should explicitly depend on the input U).
-            bias: whether or not to use a bias.
-        """
         super(ImplicitModel, self).__init__()
 
         if is_low_rank and rank is None:
@@ -61,6 +74,26 @@ class ImplicitModel(nn.Module):
 
 
     def forward(self, U: torch.Tensor, X0: Optional[torch.Tensor] = None):
+        """
+        Performs a forward pass of the implicit model.
+
+        Args:
+            U (torch.Tensor): Input tensor of shape (batch_size, input_dim) or (batch_size, ..., input_dim).
+            X0 (torch.Tensor, optional): Initial hidden state tensor of shape (hidden_dim, batch_size).
+
+        Returns:
+            torch.Tensor: The output tensor of shape (batch_size, output_dim).
+
+        Process:
+            1. Transposes and processes the input `U` for compatibility with model dimensions.
+            2. Handles optional bias padding if `bias` is True.
+            3. Initializes or validates the initial hidden state `X0`.
+            4. Computes the hidden state `X` using the implicit function:
+                - Uses low-rank approximation if `is_low_rank` is True.
+                - Otherwise, applies the full weight matrix.
+            5. Computes the output as a combination of `C @ X` and `D @ U`, transposing back to batch-first format.
+        """
+
         if (len(U.size()) == 3):
             U = U.flatten(1, -1)
         U = transpose(U)

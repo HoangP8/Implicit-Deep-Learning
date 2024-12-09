@@ -1,6 +1,7 @@
 from sklearn.metrics import mean_absolute_percentage_error, r2_score
 import os
 import datetime
+import torch
 
 def train_time_series(args, model, x_train, y_train, x_test, y_test, optimizer, loss_fn, log_dir, device):
     """
@@ -34,27 +35,30 @@ def train_time_series(args, model, x_train, y_train, x_test, y_test, optimizer, 
     log_file = open(log_file_path, 'w')
 
     # Training loop
-    for t in range(args.epochs):
+    for epoch in range(1, args.epochs + 1):
+        model.train()
         y_train_pred = model(x_train)
         loss = loss_fn(y_train_pred, y_train)
 
-        if t % 10 == 0 and t != 0:
-            log_file.write(f"Epoch {t}, MSE: {loss.item():.4f}\n")
-            print(f"Epoch {t}, MSE: {loss.item():.4f}")
+        if epoch % 10 == 0:
+            log_file.write(f"Epoch {epoch}/{args.epochs}, MSE Loss: {loss.item():.4f}\n")
+            print(f"Epoch {epoch}/{args.epochs}, MSE Loss: {loss.item():.4f}\n")
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
 
     # Evaluation
-    y_test_pred = model(x_test).cpu().detach().numpy()
-    y_test = y_test.cpu().detach().numpy()
+    model.eval()
+    with torch.no_grad():
+        y_test_pred = model(x_test).cpu().detach().numpy()
+        y_test = y_test.cpu().detach().numpy()
 
     mape = mean_absolute_percentage_error(y_test, y_test_pred)
     r2 = r2_score(y_test, y_test_pred)
 
-    log_file.write(f'R square: {r2:.2f}\n')
-    log_file.write(f'MAPE: {mape:.2f}\n')
+    log_file.write(f'Test R-square: {r2:.2f}\n')
+    log_file.write(f'Test MAPE: {mape:.2f}\n')
     log_file.close()
-    print(f'R square: {r2:.2f}')
-    print(f'MAPE: {mape:.2f}')
+    print(f'Test R square: {r2:.2f}')
+    print(f'Test MAPE: {mape:.2f}')
