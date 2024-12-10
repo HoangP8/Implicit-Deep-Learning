@@ -75,8 +75,9 @@ def initialize_idl_heads(args, idl_model):
                     args.n_embd,
                     args.block_size,
                     args.fixed_point_iter,
+                    args.attention_version,
                     args.is_low_rank,
-                    args.low_rank_k,
+                    args.rank
                 )
                 for _ in range(args.n_head)
             ]
@@ -107,7 +108,16 @@ def copy_non_attention_parameters(source_model, target_model):
         target_model.blocks[i].sa.dropout.load_state_dict(source_model.blocks[i].sa.dropout.state_dict())
 
 
-def train_model(model, data, args, device, model_type=""):
+def load_or_train_explicit_model(args, model, data, device):
+    """Loads or trains the explicit model."""
+    if args.explicit_model_path:
+        print("Loading an explicit GPT model")
+        model.load_state_dict(torch.load(args.explicit_model_path))
+    else:
+        train_model(args, model, data, device, "Explicit")
+
+
+def train_model(args, model, data, device, model_type=""):
 
     """
     Train the given model on the provided dataset.
@@ -122,7 +132,7 @@ def train_model(model, data, args, device, model_type=""):
     Returns:
         None
     """
-    
+
     checkpoints_dir = './checkpoints'
     os.makedirs(checkpoints_dir, exist_ok=True)
 
@@ -154,7 +164,7 @@ def train_model(model, data, args, device, model_type=""):
     print(f"Model saved to {model_path}")
 
 
-def copy_and_train_idl_model(model, idl_model, data, args, device):
+def train_idl_model(args, model, idl_model, data, device):
     """
     Copy the attention parameters from explicit model to IDL model and train the IDL model.
 
@@ -177,4 +187,4 @@ def copy_and_train_idl_model(model, idl_model, data, args, device):
                 args.enforce_structure_IDL,
                 args.n_embd,
             )
-    train_model(idl_model, data, args, device, "Implicit")
+    train_model(args, idl_model, data, device, "Implicit")
