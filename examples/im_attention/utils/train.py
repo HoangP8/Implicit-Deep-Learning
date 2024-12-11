@@ -3,8 +3,10 @@ import time
 import torch
 import torch.nn as nn
 import os
-from utils.utils import estimate_loss, get_batch
-from utils.model import IDLHead
+from .utils import estimate_loss, get_batch
+from .model import IDLHead
+import logging
+
 
 def copy_weights(src_head, tgt_head, head_size, enforce_structure_IDL, n_embd):
     """
@@ -16,9 +18,6 @@ def copy_weights(src_head, tgt_head, head_size, enforce_structure_IDL, n_embd):
         head_size: Size of a single attention head.
         enforce_structure_IDL: Boolean if the IDL structure should be enforced.
         n_embd: Embedding dimension
-
-    Returns:
-        None
     """
     if enforce_structure_IDL is True:
         tgt_head.A.data.fill_(0)
@@ -62,9 +61,6 @@ def initialize_idl_heads(args, idl_model):
     Args:
         args: Configurations from main.py
         idl_model: The model to initialize with IDL heads.
-
-    Returns:
-        None
     """
     
     for i in range(args.n_layer):
@@ -90,9 +86,6 @@ def copy_non_attention_parameters(source_model, target_model):
     Args:
         source_model: The source model containing the parameters to copy.
         target_model: The target model to receive the parameters.
-
-    Returns:
-        None
     """
 
     target_model.token_embedding_table.load_state_dict(source_model.token_embedding_table.state_dict())
@@ -108,17 +101,17 @@ def copy_non_attention_parameters(source_model, target_model):
         target_model.blocks[i].sa.dropout.load_state_dict(source_model.blocks[i].sa.dropout.state_dict())
 
 
-def load_or_train_explicit_model(args, model, data, device):
+def load_or_train_explicit_model(args, model, data, device, log_file):
     """Loads or trains the explicit model."""
+    
     if args.explicit_model_path:
         print("Loading an explicit GPT model")
         model.load_state_dict(torch.load(args.explicit_model_path))
     else:
-        train_model(args, model, data, device, "Explicit")
+        train_model(args, model, data, device, "Explicit", log_file)
 
 
-def train_model(args, model, data, device, model_type=""):
-
+def train_model(args, model, data, device, model_type="", log_file=None, write_initial=True):
     """
     Train the given model on the provided dataset.
 
@@ -126,12 +119,20 @@ def train_model(args, model, data, device, model_type=""):
         model: The model to train.
         data: Dictionary containing training and validation datasets.
         args: Configurations from main.py
-        device: Device usede to train.
+        device: Device used to train.
         model_type: Choose type of model to train: Explicit or Implicit, default is "".
-
-    Returns:
-        None
+        log_file: Path to the log file.
+        write_initial: If True, writes the initial arguments and model size.
     """
+
+    if write_initial:
+        with open(log_file, 'w') as f:
+            f.write("Arguments:\n")
+            for arg, value in vars(args).items():
+                f.write(f"{arg}: {value}\n")
+            f.write("\n")
+            f.write(f'Model size: {sum(p.numel() for p in model.parameters())} parameters\n')
+            f.write("\n")
 
     checkpoints_dir = './checkpoints'
     os.makedirs(checkpoints_dir, exist_ok=True)
@@ -139,14 +140,20 @@ def train_model(args, model, data, device, model_type=""):
     start_time = time.time()
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
     print(f"Training {model_type} GPT model")
-    
+    logging.info(f"Training {model_type} GPT model")
+    with open(log_file, 'a') as f:
+        f.write(f"Training {model_type} GPT model\n")
+
     for iter in range(args.max_iters):
         if iter % args.eval_interval == 0 or iter == args.max_iters - 1:
             losses = estimate_loss(model, data, args.block_size, args.batch_size, device, args.eval_iters)
-            print(
+            log_message = (
                 f"Step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f},"
                 f" train perplexity {math.exp(losses['train']):.4f}, val perplexity {math.exp(losses['val']):.4f}"
             )
+            print(log_message)
+            with open(log_file, 'a') as f:
+                f.write(f"{log_message}\n")
         
         xb, yb = get_batch(data['train'], args.block_size, args.batch_size, device)
         logits, loss = model(xb, yb)
@@ -155,16 +162,23 @@ def train_model(args, model, data, device, model_type=""):
         optimizer.step()
 
     end_time = time.time()
-    print(f"Training time for {model_type} model (seconds): ", end_time - start_time)
-
+    training_time = end_time - start_time
+    log_time_message = f"Training time for {model_type} model (seconds): {training_time:.2f}"
+    print(log_time_message)
+    with open(log_file, 'a') as f:
+        f.write(f"{log_time_message}\n")
+    
     model_filename = f"gpt_char_{args.dataset}_{model_type.lower()}_iter_{args.max_iters}.pt"
     model_path = os.path.join(checkpoints_dir, model_filename)
 
     torch.save(model.state_dict(), model_path)
     print(f"Model saved to {model_path}")
+    with open(log_file, 'a') as f:
+        f.write(f"Model saved to {model_path}\n")
+        f.write("\n")
 
 
-def train_idl_model(args, model, idl_model, data, device):
+def train_idl_model(args, model, idl_model, data, device, log_file):
     """
     Copy the attention parameters from explicit model to IDL model and train the IDL model.
 
@@ -174,10 +188,10 @@ def train_idl_model(args, model, idl_model, data, device):
         data: Dictionary containing training and validation datasets.
         args: Configurations from main.py
         device: Device usede to train.
-
-    Returns:
-        None
+        log_file: Path to the log file.
     """    
+    
+    # Copy attention parameters from explicit model
     for layer in range(args.n_layer):
         for head in range(args.n_head):
             copy_weights(
@@ -187,4 +201,5 @@ def train_idl_model(args, model, idl_model, data, device):
                 args.enforce_structure_IDL,
                 args.n_embd,
             )
-    train_model(args, idl_model, data, device, "Implicit")
+    
+    train_model(args, idl_model, data, device, "Implicit", log_file=log_file, write_initial=False)

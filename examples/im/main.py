@@ -3,7 +3,7 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 from .load_data import load_data
-from .utils import train
+from .utils import train, set_seed
 import os
 import sys
 sys.path.append('../implicit')
@@ -18,6 +18,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=100, help="Batch size for training and testing")
     parser.add_argument('--lr', type=float, default=5e-3, help="Learning rate for the optimizer")
     parser.add_argument('--device', type=int, default=0, help="Specify the device id (e.g., 0 for cuda:0)")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
     
     # Implicit model parameters
     parser.add_argument('--hidden_dim', type=int, default=None, help="Hidden size of Implicit model")
@@ -44,6 +45,7 @@ def main():
     """
 
     args = parse_args()
+    set_seed(args.seed)
     train_loader, test_loader = load_data(args)
 
     if args.hidden_dim is None:
@@ -77,7 +79,7 @@ def main():
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     loss_fn = F.cross_entropy
     device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() else "cpu")
-    log_dir = os.path.join("results", f"im_{args.dataset}_{args.hidden_dim}")
+    log_dir = os.path.join("results", f"im_{args.dataset}")
     
     # Train the model
     model, log_file = train(

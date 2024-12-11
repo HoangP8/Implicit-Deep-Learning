@@ -1,6 +1,8 @@
 import torch
 import datetime
 import os
+import random
+import numpy as np
 
 def transpose(X):
     """
@@ -10,6 +12,18 @@ def transpose(X):
     assert len(X.size()) == 2, "data must be 2D"
     return X.T
 
+
+def set_seed(seed):
+    """
+    Set seed for reproducibility.
+    """
+    random.seed(seed) 
+    np.random.seed(seed) 
+    torch.manual_seed(seed) 
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        
 
 def get_test_accuracy(model, loss_fn, test_loader, device):
     """

@@ -23,6 +23,7 @@ class Head(nn.Module):
             n_embd (int): Embedding dimension.
             block_size (int): Max sequence length for masking purposes.
             dropout (float): The dropout probability for attention weights.
+            attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
         """
 
         super().__init__()
@@ -82,6 +83,7 @@ class IDLHead(nn.Module):
         n_embd (int): Embedding dimension.
         block_size (int): The block size for masking.
         fixed_point_iter (int): The number of iterations for fixed-point optimization in DEQ.
+        attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
         is_low_rank (bool, optional): Whether to use a low-rank approach. Default is False.
         k (int, optional): The rank for the low-rank approach. Default is 1.
         """
@@ -178,6 +180,7 @@ class MultiHeadAttention(nn.Module):
             n_embd (int): Embedding dimension
             block_size (int): Max sequence length for masking purposes.
             dropout (float): The dropout probability for attention weights.
+            attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
         """
 
         super().__init__()
@@ -282,6 +285,7 @@ class GPTLanguageModel(nn.Module):
         n_layer (int): Number of transformer blocks.
         n_head (int): Number of attention heads in each block.
         dropout (float): Dropout probability for regularization.
+        attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
     """
 
     def __init__(self, vocab_size, n_embd, block_size, n_layer, n_head, dropout, attention_version):

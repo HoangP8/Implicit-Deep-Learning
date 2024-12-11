@@ -2,6 +2,20 @@ from sklearn.metrics import mean_absolute_percentage_error, r2_score
 import os
 import datetime
 import torch
+import random
+import numpy as np
+
+def set_seed(seed):
+    """
+    Set seed for reproducibility.
+    """
+    random.seed(seed) 
+    np.random.seed(seed) 
+    torch.manual_seed(seed) 
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
 
 def train_time_series(args, model, x_train, y_train, x_test, y_test, optimizer, loss_fn, log_dir, device):
     """
@@ -33,6 +47,13 @@ def train_time_series(args, model, x_train, y_train, x_test, y_test, optimizer, 
         os.makedirs(log_dir)
     log_file_path = os.path.join(log_dir, f"{timestamp}.log")
     log_file = open(log_file_path, 'w')
+
+    log_file.write("Arguments:\n")
+    for arg, value in vars(args).items():
+        log_file.write(f"{arg}: {value}\n")
+    log_file.write("\n")
+    log_file.write(f'Model size: {sum(p.numel() for p in model.parameters())} parameters\n')
+    log_file.write("\n")
 
     # Training loop
     for epoch in range(1, args.epochs + 1):

@@ -35,4 +35,5 @@ Thumbs.db
 *.txt
 
 results/
-data/
+data/*
+!data/*.csv

@@ -2,7 +2,7 @@ import argparse
 import torch
 from .load_data import load_data
 import sys
-from .utils import train_time_series
+from .utils import train_time_series,set_seed
 import os
 
 sys.path.append('../implicit')
@@ -19,6 +19,7 @@ def parse_args():
     # Optimization parameters
     parser.add_argument('--lr', type=float, default=5e-3, help="Learning rate for the optimizer")
     parser.add_argument('--device', type=int, default=0, help="Specify the device id (e.g., 0 for cuda:0)")
+    parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
     
     # Implicit model parameters
     parser.add_argument('--hidden_dim', type=int, default=None, help="Hidden size of RNN model")
@@ -49,6 +50,7 @@ def main():
     """
 
     args = parse_args()
+    set_seed(args.seed)
     x_train, x_test, y_train, y_test = load_data(args)
 
     if args.hidden_dim is None:
