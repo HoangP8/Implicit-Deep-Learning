@@ -11,6 +11,8 @@ def load_data(args):
     Loads and prepares text data based on the specified dataset in args.dataset.
     """
     if args.dataset == "tinyshakespeare":
+        print("Loading and processing data:")
+        
         data_url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
         response = requests.get(data_url)
         data = response.text
@@ -20,7 +22,6 @@ def load_data(args):
         itos = {i: ch for i, ch in enumerate(chars)}
         vocab_size = len(chars)
         
-        
         encoded_data = [stoi[c] for c in data]
         n = int(0.9 * len(encoded_data))
         
@@ -29,6 +30,8 @@ def load_data(args):
         additional_data = itos
 
     elif args.dataset == "tinystories":
+        print("Loading and processing data:")
+        
         tinystories = load_dataset("roneneldan/TinyStories")
         text = '\n'.join(tinystories['train']['text'][:])
         enc = tiktoken.get_encoding("gpt2")
@@ -42,8 +45,9 @@ def load_data(args):
         additional_data = enc
         
     elif args.dataset == "wikitext":
-
-        data_cache_dir = './data_raw/'
+        print("Loading and processing data:")
+        
+        data_cache_dir = './data/'
         checkpoint_path = os.path.join(data_cache_dir, 'wikitext-103.pt')
         tokenizer = tiktoken.get_encoding("gpt2")
         vocab_size = tokenizer.n_vocab
@@ -54,9 +58,10 @@ def load_data(args):
         else:
             print("Downloading and preparing Wikitext data")
             raw_data_source = 'https://wikitext.smerity.com/wikitext-103-raw-v1.zip'
-            raw_data_cache = './data_raw/'
-
-            if not os.path.exists(raw_data_cache):
+            raw_data_cache = './data/'
+            extracted_dir = os.path.join(raw_data_cache, 'wikitext-103-raw')
+            
+            if not os.path.exists(extracted_dir):
                 os.makedirs(raw_data_cache, exist_ok=True)
                 subprocess.run(["wget", raw_data_source, "-O", raw_data_cache + "data.zip"], stdout=subprocess.PIPE)
 

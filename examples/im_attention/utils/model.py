@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchdeq import get_deq, reset_deq
 
 class Head(nn.Module):
     """
@@ -15,7 +14,7 @@ class Head(nn.Module):
         dropout (nn.Dropout): Dropout layer for regularization.
     """
 
-    def __init__(self, head_size, n_embd, block_size, dropout):
+    def __init__(self, head_size, n_embd, block_size, dropout, attention_version):
         """
         Initializes the attention head.
 
@@ -24,6 +23,7 @@ class Head(nn.Module):
             n_embd (int): Embedding dimension.
             block_size (int): Max sequence length for masking purposes.
             dropout (float): The dropout probability for attention weights.
+            attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
         """
 
         super().__init__()
@@ -32,6 +32,7 @@ class Head(nn.Module):
         self.value = nn.Linear(n_embd, head_size, bias=False)
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
         self.dropout = nn.Dropout(dropout)
+        self.attention_version = attention_version
 
     def forward(self, x):
         """
@@ -48,29 +49,32 @@ class Head(nn.Module):
         k = self.key(x)  # (B, T, head_size)
         q = self.query(x)  # (B, T, head_size)
         v = self.value(x)  # (B, T, head_size)
-
-        wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5  # (B, T, T)
-        wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))  # (B, T, T)
-        wei = F.softmax(wei, dim=-1)  # (B, T, T)
-        wei = self.dropout(wei)
-        out = wei @ v  # (B, T, T) -> (B, T, head_size)
-
-        # Lipschitz Attention
-        # k_norm = torch.cdist(q, k, p=2) ** 2
-        # wei = torch.exp(-k_norm)
-        # wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
-        # denom = 0.25 + wei.sum(dim=-1, keepdim=True)
-        # wei = wei / denom
-        # w_map = v / torch.sqrt(v ** 2 + 1)
-        # out = wei @ w_map
-
+        
+        if self.attention_version == 'softmax':
+            wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5  # (B, T, T)
+            wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))  # (B, T, T)
+            wei = F.softmax(wei, dim=-1)  # (B, T, T)
+            wei = self.dropout(wei)
+            out = wei @ v  # (B, T, T) -> (B, T, head_size)
+        
+        elif self.attention_version == 'lipschitz':
+            k_norm = torch.cdist(q, k, p=2) ** 2
+            wei = torch.exp(-k_norm)
+            wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
+            denom = 0.25 + wei.sum(dim=-1, keepdim=True)
+            wei = wei / denom
+            w_map = v / torch.sqrt(v ** 2 + 1)
+            out = wei @ w_map
+        else:
+            raise ValueError(f"Unsupported attention version: {self.attention_version}. Choose 'softmax' or 'lipschitz'.")
+        
         return out
 
 
 class IDLHead(nn.Module):
     """One head of self-attention implemented in IDL"""
 
-    def __init__(self, head_size, n_embd, block_size, fixed_point_iter, is_low_rank=False, k=1):
+    def __init__(self, head_size, n_embd, block_size, fixed_point_iter, attention_version, is_low_rank=False, rank=1):
         """
         Initialize the IDL self-attention head.
 
@@ -79,6 +83,7 @@ class IDLHead(nn.Module):
         n_embd (int): Embedding dimension.
         block_size (int): The block size for masking.
         fixed_point_iter (int): The number of iterations for fixed-point optimization in DEQ.
+        attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
         is_low_rank (bool, optional): Whether to use a low-rank approach. Default is False.
         k (int, optional): The rank for the low-rank approach. Default is 1.
         """
@@ -86,16 +91,17 @@ class IDLHead(nn.Module):
         super().__init__()
         self.hs = head_size
         self.is_low_rank = is_low_rank
+        self.attention_version = attention_version
         
         if self.is_low_rank:
-            k = k
-            self.L = nn.Parameter(torch.zeros(self.hs * 4, k))
-            self.R = nn.Parameter(torch.zeros(k, self.hs * 4))
+            self.rank = rank
+            self.L = nn.Parameter(torch.zeros(self.hs * 4, self.rank))
+            self.R = nn.Parameter(torch.zeros(self.rank, self.hs * 4))
             nn.init.xavier_uniform_(self.L)
             nn.init.xavier_uniform_(self.R)
+            
         else:
-            # self.A = nn.Parameter(torch.zeros((block_size, self.hs * 4))) # Hadamard 
-            self.A = nn.Parameter(torch.zeros(self.hs * 4, self.hs * 4))    # Matrix Multp
+            self.A = nn.Parameter(torch.zeros(self.hs * 4, self.hs * 4))  
             nn.init.xavier_uniform_(self.A)
 
         self.B = nn.Parameter(torch.zeros((n_embd, self.hs * 4)))
@@ -104,17 +110,6 @@ class IDLHead(nn.Module):
         nn.init.xavier_uniform_(self.B)
         self.fixed_point_iter = fixed_point_iter
         
-        # DEQ solver
-        self.deq = get_deq(
-            ift=True,
-            # f_solver="anderson",
-            f_max_iter=fixed_point_iter,
-            f_tol=1e-6,
-            # b_solver="anderson",
-            b_max_iter=fixed_point_iter,
-            b_tol=1e-6,
-        )
-
     def forward(self, x):
         B, T, C = x.shape
         B_U = torch.einsum("dk,bnd->bnk", self.B, x)
@@ -131,48 +126,36 @@ class IDLHead(nn.Module):
             else:
                 self.A /= torch.linalg.matrix_norm(self.A, ord=float('inf'))
                 self.A *= 0.95
-
-        def deq_func(X):
-            pre_X = torch.einsum("bik,kj->bij", X, self.A) + B_U      # Matrix Multp
-            
+                
+        for _ in range(self.fixed_point_iter):
+            pre_X = torch.einsum("bik,kj->bij", X, self.A[:, :]) + B_U     
+        
             k = pre_X[:, :, : self.hs]
             q = pre_X[:, :, self.hs : self.hs * 2]
             v = pre_X[:, :, self.hs * 2 : self.hs * 3]
-
-            wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
-            wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-            wei = F.softmax(wei, dim=-1)
-            out = wei @ v
-            return torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
             
-        X_out, info = self.deq(deq_func, X)
-        X = X_out[-1]
-        # for _ in range(self.fixed_point_iter):
-        #     # pre_X = torch.einsum("ij,bij->bij", self.A[:T, :], X) + B_U   # Hadamard 
-        #     pre_X = torch.einsum("bik,kj->bij", X, self.A[:, :]) + B_U      # Matrix Multp
+            if self.attention_version == 'softmax':
+                wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
+                wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
+                wei = F.softmax(wei, dim=-1)
+                out = wei @ v
             
-        #     k = pre_X[:, :, : self.hs]
-        #     q = pre_X[:, :, self.hs : self.hs * 2]
-        #     v = pre_X[:, :, self.hs * 2 : self.hs * 3]
+            elif self.attention_version == 'lipschitz':
+                k_norm = torch.cdist(q, k, p=2) ** 2
+                wei = torch.exp(-k_norm)
+                wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
+                denom = 0.25 + wei.sum(dim=-1, keepdim=True)
+                wei = wei / denom
+                w_map = v / torch.sqrt(v ** 2 + 1)
+                out = wei @ w_map
+                
+            else:
+                raise ValueError(f"Unsupported attention version: {self.attention_version}. Choose 'softmax' or 'lipschitz'.")
 
-        #     wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
-        #     wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-        #     wei = F.softmax(wei, dim=-1)
-        #     out = wei @ v
-
-        #     # Lipschitz Attention
-        #     # k_norm = torch.cdist(q, k, p=2) ** 2
-        #     # wei = torch.exp(-k_norm)
-        #     # wei = wei.masked_fill(self.tril[:T, :T] == 0, 0)
-        #     # denom = 0.25 + wei.sum(dim=-1, keepdim=True)
-        #     # wei = wei / denom
-        #     # w_map = v / torch.sqrt(v ** 2 + 1)
-        #     # out = wei @ w_map
-
-        #     post_X = torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
-        #     if torch.allclose(post_X, X, atol=1e-6):
-        #         break
-        #     X = post_X
+            post_X = torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
+            if torch.allclose(post_X, X, atol=1e-6):
+                break
+            X = post_X
 
         return X[:, :, self.hs * 3 :]
 
@@ -187,7 +170,7 @@ class MultiHeadAttention(nn.Module):
         dropout (nn.Dropout): Dropout layer for regularization
     """
 
-    def __init__(self, num_heads, head_size, n_embd, block_size, dropout):
+    def __init__(self, num_heads, head_size, n_embd, block_size, dropout, attention_version):
         """
         Initializes the multi-head attention layer.
 
@@ -197,18 +180,19 @@ class MultiHeadAttention(nn.Module):
             n_embd (int): Embedding dimension
             block_size (int): Max sequence length for masking purposes.
             dropout (float): The dropout probability for attention weights.
+            attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
         """
 
         super().__init__()
         self.heads = nn.ModuleList(
-            [Head(head_size, n_embd, block_size, dropout) for _ in range(num_heads)]
+            [Head(head_size, n_embd, block_size, dropout, attention_version) for _ in range(num_heads)]
         )
         self.proj = nn.Linear(head_size * num_heads, n_embd)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         """
-        Forward pass of multi-head attention.
+        Forward pass of multi-head attention.s
 
         Args:
             x (torch.Tensor): Input tensor of shape (batch_size, sequence_length, embedding_dim).
@@ -266,7 +250,7 @@ class Block(nn.Module):
     - Feed-forward network (MLP) followed by residual connection.
     """
 
-    def __init__(self, n_embd, n_head, block_size, dropout):
+    def __init__(self, n_embd, n_head, block_size, dropout, attention_version):
         """
         Initializes transformer block.
         
@@ -279,7 +263,7 @@ class Block(nn.Module):
 
         super().__init__()
         head_size = n_embd // n_head
-        self.sa = MultiHeadAttention(n_head, head_size, n_embd, block_size, dropout)
+        self.sa = MultiHeadAttention(n_head, head_size, n_embd, block_size, dropout, attention_version)
         self.ffwd = FeedFoward(n_embd, dropout)
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
@@ -301,14 +285,15 @@ class GPTLanguageModel(nn.Module):
         n_layer (int): Number of transformer blocks.
         n_head (int): Number of attention heads in each block.
         dropout (float): Dropout probability for regularization.
+        attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
     """
 
-    def __init__(self, vocab_size, n_embd, block_size, n_layer, n_head, dropout):
+    def __init__(self, vocab_size, n_embd, block_size, n_layer, n_head, dropout, attention_version):
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
         self.blocks = nn.Sequential(
-            *[Block(n_embd, n_head, block_size, dropout) for _ in range(n_layer)]
+            *[Block(n_embd, n_head, block_size, dropout, attention_version) for _ in range(n_layer)]
         )
         self.ln_f = nn.LayerNorm(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size)

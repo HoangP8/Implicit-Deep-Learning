@@ -33,3 +33,7 @@ Thumbs.db
 *.pt
 *.pth
 *.txt
+
+results/
+data/*
+!data/*.csv
