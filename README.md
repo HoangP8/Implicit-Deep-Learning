@@ -74,13 +74,15 @@ model = ImplicitModel(hidden_dim=100, input_dim=3072, output_dim=10, low_rank=Tr
 - [x] Code examples for `im` and `im_rnn` 
    - [x] Refactor Time-series data processing + training
    - [x] Test Inference + Debug   
-- [ ] Refactor `im_attention` example (4 days)
-   - [ ] Flexibility in base self-attention and Lipschitz version
-   - [ ] Refactor the functions effectively
+- [x] Refactor `im_attention` example
+   - [x] Flexibility in base self-attention and Lipschitz version
+   - [x] Refactor the functions effectively
    - [ ] Users can use easily
-- [ ] Refactor `sim` example (4 days)
+- [ ] Refactor `sim` example
    - [ ] Get different solvers
    - [ ] Different experiments
-- [ ] Docstring (Important) (1 week)
+- [x] Docstring (Important)
+   - [x] Implicit (ver1)
+   - [ ] SIM 
 - [ ] Debug, check, and test (1 week)
 
