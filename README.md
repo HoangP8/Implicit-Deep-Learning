@@ -13,14 +13,15 @@ Project
 │   ├─ 📂im_attention
 │   └─ 📂sim
 │   
-└─ 📂src
+├─ 📂src
 │   └─ 📂idl
 │   │   ├─ 📃base_function.py
 │   │   ├─ 📃ImplicitModel.py
 │   │   ├─ 📃ImplicitRNN.py
 │   │   └─ 📂sim
 │   │   │   ├─ 📃base_function.py
-│   │   │   └─ 📃SIM.py              
+│   │   │   └─ 📃SIM.py
+└─ 📃setup.py              
 ```
 
 ## Interface
