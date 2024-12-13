@@ -12,7 +12,7 @@ Project
 │   ├─ 📂im_rnn
 │   ├─ 📂im_attention
 │   └─ 📂sim
-│   
+├─ 📂docs  
 ├─ 📂src
 │   └─ 📂idl
 │   │   ├─ 📃base_function.py
