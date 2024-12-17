@@ -12,17 +12,18 @@ Project
 │   ├─ 📂im_rnn
 │   ├─ 📂im_attention
 │   └─ 📂sim
-│   
-├─ 📂idl
-│   ├─ 📃base_function.py
-│   ├─ 📃ImplicitModel.py
-│   └─ 📃ImplicitRNN.py
-│ 
-├─ 📂sim
-│   ├─ 📃base_function.py
-│   └─ 📃SIM.py
-│  
-└─ 📃introduction.ipynb                    
+│
+├─ 📂docs  
+│
+├─ 📂src
+│   └─ 📂idl
+│   │   ├─ 📃base_function.py
+│   │   ├─ 📃ImplicitModel.py
+│   │   ├─ 📃ImplicitRNN.py
+│   │   └─ 📂sim
+│   │   │   ├─ 📃base_function.py
+│   │   │   └─ 📃SIM.py
+└─ 📃setup.py              
 ```
 
 ## Interface
