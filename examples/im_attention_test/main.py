@@ -7,7 +7,7 @@ from .model import GPTLanguageModel
 from .utils import train_model, set_seed, generate_text
 
 sys.path.append('../implicit')
-from implicit.idl.attention.ImplicitAttention import ImplicitAttention
+from idl.attention.ImplicitAttention import ImplicitAttention
 
 
 def parse_args():
@@ -71,7 +71,7 @@ def main():
         'n_layer': args.n_layer,
         'n_head': args.n_head,
         'dropout': args.dropout
-}
+    }
 
     # Initialize models
     idl_model = ImplicitAttention(
