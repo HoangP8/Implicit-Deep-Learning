@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from typing import Optional
+from typing import Optional, Type
 from .implicit_function import ImplicitFunctionInf, ImplicitFunction, transpose, project_onto_Linf_ball
 
 
@@ -22,7 +22,7 @@ class ImplicitModel(nn.Module):
         hidden_dim (int): Number of hidden features.
         input_dim (int): Number of input features.
         output_dim (int): Number of output features.
-        f (ImplicitFunction, optional): The implicit function to use (default: ImplicitFunctionInf for well-posedness).
+        f (Type[ImplicitFunction], optional): The implicit function to use (default: ImplicitFunctionInf for well-posedness).
         no_D (bool, optional): Whether to exclude matrix D (default: False).
         bias (bool, optional): Whether to include a bias term (default: False).
         mitr (int, optional): Max iterations for the forward pass. (default: 300).
@@ -34,18 +34,23 @@ class ImplicitModel(nn.Module):
         rank (int, optional): Rank for low-rank approximation (required if `is_low_rank` is True).
     """
 
-    def __init__(self, hidden_dim: int, input_dim: int, output_dim: int,
-                 f: Optional[ImplicitFunction] = ImplicitFunctionInf,
-                 no_D: Optional[bool] = False,
-                 bias: Optional[bool] = False,
-                 mitr: Optional[int] = 300,
-                 grad_mitr: Optional[int] = 300,
-                 tol: Optional[float] = 3e-6,
-                 grad_tol: Optional[float] = 3e-6,
-                 v: Optional[float] = 0.95,
-                 is_low_rank: Optional[bool] = False,
-                 rank: Optional[int] = None):
-        super(ImplicitModel, self).__init__()
+    def __init__(
+        self,
+        hidden_dim: int,
+        input_dim: int,
+        output_dim: int,
+        f: Type[ImplicitFunction] = ImplicitFunctionInf,
+        no_D: bool = False,
+        bias: bool = False,
+        mitr: int = 300,
+        grad_mitr: int = 300,
+        tol: float = 3e-6,
+        grad_tol: float = 3e-6,
+        v: float = 0.95,
+        is_low_rank: bool = False,
+        rank: Optional[int] = None
+    ) -> None:
+        super().__init__()
 
         if is_low_rank and rank is None:
             raise ValueError("Parameter 'k' is required when 'is_low_rank' is True.")
@@ -53,27 +58,37 @@ class ImplicitModel(nn.Module):
         if bias:
             input_dim += 1
 
-        self.hidden_dim = hidden_dim
-        self.input_dim = input_dim
-        self.output_dim = output_dim
-        self.is_low_rank = is_low_rank
+        self.hidden_dim: int = hidden_dim
+        self.input_dim: int = input_dim
+        self.output_dim: int = output_dim
+        self.is_low_rank: bool = is_low_rank
+        self.no_D: bool = no_D
+        self.bias: bool = bias
         
         if self.is_low_rank:
-            self.L = nn.Parameter(torch.randn(hidden_dim, rank)/hidden_dim)
-            self.R = nn.Parameter(torch.randn(hidden_dim, rank)/hidden_dim)     
+            if rank is None:
+                raise ValueError("Rank must be specified when using low-rank approximation.")
+            self.L: nn.Parameter = nn.Parameter(torch.randn(hidden_dim, rank) / hidden_dim)
+            self.R: nn.Parameter = nn.Parameter(torch.randn(hidden_dim, rank) / hidden_dim)
         else:
-            self.A = nn.Parameter(torch.randn(hidden_dim, hidden_dim)/hidden_dim)   
-            
-        self.B = nn.Parameter(torch.randn(hidden_dim, input_dim)/hidden_dim)
-        self.C = nn.Parameter(torch.randn(output_dim, hidden_dim)/hidden_dim)
-        self.D = nn.Parameter(torch.randn(output_dim, input_dim)/hidden_dim) if not no_D else torch.zeros((output_dim, input_dim), requires_grad=False)
-        
-        self.f = f  # The class of the implicit function (e.g., ImplicitFunctionInf)
+            self.A: nn.Parameter = nn.Parameter(torch.randn(hidden_dim, hidden_dim) / hidden_dim)
+
+        self.B: nn.Parameter = nn.Parameter(torch.randn(hidden_dim, input_dim) / hidden_dim)
+        self.C: nn.Parameter = nn.Parameter(torch.randn(output_dim, hidden_dim) / hidden_dim)
+        if not self.no_D:
+            self.D: nn.Parameter = nn.Parameter(torch.randn(output_dim, input_dim) / hidden_dim)
+        else:
+            self.D: torch.Tensor = torch.zeros((output_dim, input_dim), requires_grad=False)
+
+        self.f: ImplicitFunction = f()
         self.f.set_parameters(mitr=mitr, grad_mitr=grad_mitr, tol=tol, grad_tol=grad_tol, v=v)
-        self.bias = bias
 
 
-    def forward(self, U: torch.Tensor, X0: Optional[torch.Tensor] = None):
+    def forward(
+        self, 
+        U: torch.Tensor, 
+        X0: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Performs a forward pass of the implicit model.
 

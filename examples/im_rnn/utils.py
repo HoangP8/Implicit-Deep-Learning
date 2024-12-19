@@ -1,11 +1,16 @@
-from sklearn.metrics import mean_absolute_percentage_error, r2_score
 import os
 import datetime
 import torch
 import random
 import numpy as np
+from typing import Any, Dict
+from argparse import Namespace
+from torch import nn, Tensor
+from torch.optim import Optimizer
+from sklearn.metrics import mean_absolute_percentage_error, r2_score
 
-def set_seed(seed):
+
+def set_seed(seed: int) -> None:
     """
     Set seed for reproducibility.
     """
@@ -17,12 +22,23 @@ def set_seed(seed):
         torch.cuda.manual_seed_all(seed)
 
 
-def train_time_series(args, model, x_train, y_train, x_test, y_test, optimizer, loss_fn, log_dir, device):
+def train_time_series(
+    args: Namespace,
+    model: nn.Module,
+    x_train: Tensor,
+    y_train: Tensor,
+    x_test: Tensor,
+    y_test: Tensor,
+    optimizer: Optimizer,
+    loss_fn: nn.Module,
+    log_dir: str,
+    device: torch.device
+) -> Dict[str, float]:
     """
     Trains a model on time series data, logs the training process, and evaluates the model.
 
     Args:
-        args: Contains configuration such as the number of epochs.
+        args (Namespace): Contains configuration such as the number of epochs.
         model (torch.nn.Module): The model to train.
         x_train (torch.Tensor): Training features.
         y_train (torch.Tensor): Training targets.
@@ -34,7 +50,9 @@ def train_time_series(args, model, x_train, y_train, x_test, y_test, optimizer, 
         device (torch.device): The device (CPU or GPU) for training.
 
     Returns:
-        dict: A dictionary containing model evaluation metrics.
+        Dict[str, float]: A dictionary containing model evaluation metrics.
+            - 'r2': R-squared score on the test dataset.
+            - 'mape': Mean Absolute Percentage Error on the test dataset.
     """
     
     model.to(device)

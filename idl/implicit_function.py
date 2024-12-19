@@ -1,19 +1,20 @@
 import torch
 from torch.autograd import Function
+from typing import Optional, Tuple, Type, Any
 import numpy as np
 import warnings
 import torch
 
-def transpose(X):
+def transpose(X: torch.Tensor) -> torch.Tensor:
     """
     Transpose a 2D matrix.
     """
-
-    assert len(X.size()) == 2, "data must be 2D"
+    
+    assert X.dim() == 2, "data must be 2D"
     return X.T
 
 
-def project_onto_Linf_ball(A, v):
+def project_onto_Linf_ball(A: torch.Tensor, v: float) -> torch.Tensor:
     """
     Project a matrix onto the L-infty norm ball of radius v.
 
@@ -32,6 +33,9 @@ def project_onto_Linf_ball(A, v):
 
 
 class ImplicitFunctionWarning(RuntimeWarning):
+    """
+    Warning raised when implicit function iterations do not converge.
+    """
     pass
 
 class ImplicitFunction(Function):
@@ -40,7 +44,14 @@ class ImplicitFunction(Function):
     """
     
     @classmethod
-    def set_parameters(cls, mitr=None, grad_mitr=None, tol=None, grad_tol=None, v=None):
+    def set_parameters(
+        cls,
+        mitr: Optional[int] = None,
+        grad_mitr: Optional[int] = None,
+        tol: Optional[float] = None,
+        grad_tol: Optional[float] = None,
+        v: Optional[float] = None
+    ) -> None:
         """
         Set parameters for Picard iteration and convergence.
 
@@ -64,7 +75,14 @@ class ImplicitFunction(Function):
             cls.v = v                    
     
     @classmethod
-    def forward(cls, ctx, A, B, X0, U):
+    def forward(
+        cls,
+        ctx: Any,
+        A: torch.Tensor,
+        B: torch.Tensor,
+        X0: torch.Tensor,
+        U: torch.Tensor
+    ) -> torch.Tensor:
         """
         Perform the forward pass using Picard iterations to solve `AX + BU = X`.
 
@@ -86,7 +104,11 @@ class ImplicitFunction(Function):
         return X
 
     @classmethod
-    def backward(cls, ctx, *grad_outputs):
+    def backward(
+        cls,
+        ctx: Any,
+        *grad_outputs: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Compute gradients using implicit backward propagation for the fixed-point equation.
 
@@ -118,7 +140,7 @@ class ImplicitFunction(Function):
         return grad_A, grad_B, torch.zeros_like(X), grad_U
 
     @staticmethod
-    def phi(X):
+    def phi(X: torch.Tensor) -> torch.Tensor:
         """
         ReLU activation.
         """
@@ -126,7 +148,7 @@ class ImplicitFunction(Function):
         return torch.clamp(X, min=0)
 
     @staticmethod
-    def dphi(X):
+    def dphi(X: torch.Tensor) -> torch.Tensor:
         """
         Derivative of ReLU.
         """
@@ -136,7 +158,14 @@ class ImplicitFunction(Function):
         return grad
 
     @classmethod
-    def inn_pred(cls, A, Z, X, mitr, tol):
+    def inn_pred(
+        cls,
+        A: torch.Tensor,
+        Z: torch.Tensor,
+        X: torch.Tensor,
+        mitr: int,
+        tol: float
+    ) -> Tuple[torch.Tensor, float, str]:
         """
         Solve `AX + Z = X` using Picard iterations.
 
@@ -163,7 +192,13 @@ class ImplicitFunction(Function):
         return X, err, status
 
     @staticmethod
-    def inn_pred_grad(AT, Z, DPhi, mitr, tol):
+    def inn_pred_grad(
+        AT: torch.Tensor,
+        Z: torch.Tensor,
+        DPhi: torch.Tensor,
+        mitr: int,
+        tol: float
+    ) -> Tuple[torch.Tensor, float, str]:
         """
         Compute gradient using backward Picard iterations.
 
@@ -175,11 +210,11 @@ class ImplicitFunction(Function):
             DPhi (torch.Tensor): Derivative of activation.
 
         Returns:
-            tuple: Gradient, error, status ('converged' or 'max itrs reached').
+            Tuple[torch.Tensor, float, str]: Gradient V, error, status ('converged' or 'max itrs reached').
         """
     
         X = torch.zeros_like(Z)
-        err = 0
+        err = 0.0
         status = 'max itrs reached'
         for _ in range(mitr):
             X_new = DPhi * (AT @ X) + Z
@@ -201,12 +236,52 @@ class ImplicitFunctionTriu(ImplicitFunction):
     """
 
     @classmethod
-    def forward(cls, ctx, A, B, X0, U):
+    def forward(
+        cls,
+        ctx: Any,
+        A: torch.Tensor,
+        B: torch.Tensor,
+        X0: torch.Tensor,
+        U: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Apply upper triangular constraint to A and perform the forward pass.
+
+        Args:
+            ctx (Any): Context object to save information for backward computation.
+            A (torch.Tensor): Matrix A.
+            B (torch.Tensor): Matrix B.
+            X0 (torch.Tensor): Initial hidden state tensor.
+            U (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: The stable solution for X.
+        """
+        
         A = A.triu_(1)
         return super(ImplicitFunctionTriu, cls).forward(ctx, A, B, X0, U)
 
     @classmethod
-    def backward(cls, ctx, *grad_outputs):
+    def backward(
+        cls,
+        ctx: Any,
+        *grad_outputs: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Keep the gradient of A upper triangular and perform backward pass.
+
+        Args:
+            ctx (Any): Context object containing saved tensors.
+            grad_outputs (Tuple[torch.Tensor, ...]): Gradients of the output.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+                - Gradient of A (upper triangular).
+                - Gradient of B.
+                - Zero gradient for X.
+                - Gradient of U.
+        """
+        
         grad_A, grad_B, grad_X, grad_U = super(ImplicitFunctionTriu, cls).backward(ctx, *grad_outputs)
         return grad_A.triu(1), grad_B, grad_X, grad_U
 
@@ -220,6 +295,27 @@ class ImplicitFunctionInf(ImplicitFunction):
     """
 
     @classmethod
-    def forward(cls, ctx, A, B, X0, U):
+    def forward(
+        cls,
+        ctx: Any,
+        A: torch.Tensor,
+        B: torch.Tensor,
+        X0: torch.Tensor,
+        U: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Project A onto the L-infty norm ball and perform the forward pass.
+
+        Args:
+            ctx (Any): Context object to save information for backward computation.
+            A (torch.Tensor): Matrix A.
+            B (torch.Tensor): Matrix B.
+            X0 (torch.Tensor): Initial hidden state tensor.
+            U (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: The stable solution for X.
+        """
+        
         A = project_onto_Linf_ball(A, cls.v)
         return super(ImplicitFunctionInf, cls).forward(ctx, A, B, X0, U)

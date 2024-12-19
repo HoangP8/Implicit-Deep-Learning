@@ -1,66 +1,22 @@
 import math
 import time
 import torch
-import torch.nn as nn
+from torch import nn, Tensor
 import os
 import sys
+from typing import Any, Dict, Optional
 from .utils import estimate_loss, get_batch
 sys.path.append('../implicit')
-from idl.attention_2.implicit_head import IDLHead
+from idl.attention.implicit_head import IDLHead
 
-def copy_weights(src_head, tgt_head, head_size, enforce_structure_IDL, n_embd):
-    """
-    Copy the weights from the source model to the target model.
 
-    Args:
-        src_head: Source attention head.
-        tgt_head: Target attention head.
-        head_size: Size of a single attention head.
-        enforce_structure_IDL: Boolean if the IDL structure should be enforced.
-        n_embd: Embedding dimension
-    """
-    if enforce_structure_IDL is True:
-        tgt_head.A.data.fill_(0)
-        tgt_head.A.data[:, 3 * head_size :] = 1
-
-        Z = torch.zeros(
-            (n_embd, head_size), device=src_head.key.weight.device, requires_grad=False
-        )
-        tgt_head.B.data.copy_(
-            torch.cat(
-                [
-                    src_head.key.weight.data.T,
-                    src_head.query.weight.data.T,
-                    src_head.value.weight.data.T,
-                    Z,
-                ],
-                dim=1,
-            )
-        )
-
-        tgt_head.A.requires_grad = False
-        tgt_head.B[:, 3 * head_size :].detach()
-    else:
-        tgt_head.B.data.copy_(
-            torch.cat(
-                [
-                    src_head.key.weight.data.T,
-                    src_head.query.weight.data.T,
-                    src_head.value.weight.data.T,
-                    tgt_head.B[:, 3 * head_size :],
-                ],
-                dim=1,
-            )
-        )
-        
-
-def initialize_idl_heads(args, idl_model):
+def initialize_idl_heads(args: Any, idl_model: nn.Module) -> None:
     """
     Initialize IDL attention heads in the model.
 
     Args:
-        args: Configurations from main.py
-        idl_model: The model to initialize with IDL heads.
+        args (Any): Configurations from main.py
+        idl_model (nn.Module): The model to initialize with IDL heads.
     """
     
     for i in range(args.n_layer):
@@ -80,17 +36,24 @@ def initialize_idl_heads(args, idl_model):
         )
 
 
-def train_model(args, model, data, device, log_file=None):
+def train_model(
+    args: Any,
+    model: nn.Module,
+    data: Dict[str, Tensor],
+    device: torch.device,
+    log_file: Optional[str] = None
+) -> None:
     """
     Train the given model on the provided dataset.
 
     Args:
-        model: The model to train.
-        data: Dictionary containing training and validation datasets.
-        args: Configurations from main.py
-        device: Device used to train.
-        model_type: Choose type of model to train: Explicit or Implicit, default is "".
-        log_file: Path to the log file.
+        args (Any): Configurations from main.py containing attributes such as 'max_iters',
+                    'learning_rate', 'block_size', 'batch_size', 'eval_interval', 'eval_iters',
+                    and 'dataset'.
+        model (nn.Module): The model to train.
+        data (Dict[str, Tensor]): Dictionary containing training and validation datasets with keys 'train' and 'val'.
+        device (torch.device): Device used to train (CPU or GPU).
+        log_file (Optional[str]): Path to the log file. If None, logs will not be saved to a file.
     """
 
     with open(log_file, 'w') as f:

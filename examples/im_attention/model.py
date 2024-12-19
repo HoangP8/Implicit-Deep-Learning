@@ -1,5 +1,5 @@
 import torch
-import torch.nn as nn
+from torch import nn, Tensor
 import torch.nn.functional as F
 
 class Head(nn.Module):
@@ -14,7 +14,13 @@ class Head(nn.Module):
         dropout (nn.Dropout): Dropout layer for regularization.
     """
 
-    def __init__(self, head_size, n_embd, block_size, dropout):
+    def __init__(
+        self,
+        head_size: int,
+        n_embd: int,
+        block_size: int,
+        dropout: float
+    ) -> None:
         """
         Initializes the attention head.
 
@@ -32,7 +38,7 @@ class Head(nn.Module):
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of the attention head.
 
@@ -56,43 +62,6 @@ class Head(nn.Module):
         
         return out
 
-        
-    def forward(self, x):
-        B, T, C = x.shape
-        B_U = torch.einsum("dk,bnd->bnk", self.B, x)
-        X = torch.zeros((B, T, 4 * self.hs), device=x.device, requires_grad=True)
-
-        # Scale self.A by its matrix inf-norm
-        with torch.no_grad():
-            if self.is_low_rank:
-                self.L /= torch.linalg.matrix_norm(self.L, ord=float('inf'))
-                self.L *= 0.95
-                self.R /= torch.linalg.matrix_norm(self.R, ord=float('inf'))
-                self.R *= 0.95
-                self.A = self.L @ self.R
-            else:
-                self.A /= torch.linalg.matrix_norm(self.A, ord=float('inf'))
-                self.A *= 0.95
-                
-        for _ in range(self.fixed_point_iter):
-            pre_X = torch.einsum("bik,kj->bij", X, self.A[:, :]) + B_U     
-        
-            k = pre_X[:, :, : self.hs]
-            q = pre_X[:, :, self.hs : self.hs * 2]
-            v = pre_X[:, :, self.hs * 2 : self.hs * 3]
-            
-            wei = q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
-            wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
-            wei = F.softmax(wei, dim=-1)
-            out = wei @ v
-        
-            post_X = torch.cat((pre_X[:, :, : self.hs * 3], out), dim=-1)
-            if torch.allclose(post_X, X, atol=1e-6):
-                break
-            X = post_X
-
-        return X[:, :, self.hs * 3 :]
-
 
 class MultiHeadAttention(nn.Module):
     """
@@ -104,7 +73,14 @@ class MultiHeadAttention(nn.Module):
         dropout (nn.Dropout): Dropout layer for regularization
     """
 
-    def __init__(self, num_heads, head_size, n_embd, block_size, dropout):
+    def __init__(
+        self,
+        num_heads: int,
+        head_size: int,
+        n_embd: int,
+        block_size: int,
+        dropout: float
+    ) -> None:
         """
         Initializes the multi-head attention layer.
 
@@ -123,7 +99,7 @@ class MultiHeadAttention(nn.Module):
         self.proj = nn.Linear(head_size * num_heads, n_embd)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of multi-head attention.s
 
@@ -144,7 +120,11 @@ class FeedFoward(nn.Module):
     A simple MLP player
     """
     
-    def __init__(self, n_embd, dropout):
+    def __init__(
+        self,
+        n_embd: int,
+        dropout: float
+    ) -> None:
         """
         Initializes the MLP layer.
         
@@ -161,7 +141,7 @@ class FeedFoward(nn.Module):
             nn.Dropout(dropout),
         )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of the MLP network.
         
@@ -183,7 +163,13 @@ class Block(nn.Module):
     - Feed-forward network (MLP) followed by residual connection.
     """
 
-    def __init__(self, n_embd, n_head, block_size, dropout):
+    def __init__(
+        self,
+        n_embd: int,
+        n_head: int,
+        block_size: int,
+        dropout: float
+    ) -> None:
         """
         Initializes transformer block.
         
@@ -201,7 +187,18 @@ class Block(nn.Module):
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Forward pass of the transformer block.
+
+        Args:
+            x (Tensor): Input tensor of shape (batch_size, sequence_length, embedding_dim).
+
+        Returns:
+            Tensor: Output tensor of the same shape as input (batch_size, sequence_length, embedding_dim).
+
+        """
+        
         x = x + self.sa(self.ln1(x))
         x = x + self.ffwd(self.ln2(x))
         return x
@@ -220,7 +217,16 @@ class GPTLanguageModel(nn.Module):
         dropout (float): Dropout probability for regularization.
     """
 
-    def __init__(self, vocab_size, n_embd, block_size, n_layer, n_head, dropout):
+    def __init__(
+        self,
+        vocab_size: int,
+        n_embd: int,
+        block_size: int,
+        n_layer: int,
+        n_head: int,
+        dropout: float
+    ) -> None:
+        
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
@@ -229,12 +235,15 @@ class GPTLanguageModel(nn.Module):
         )
         self.ln_f = nn.LayerNorm(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size)
-
         self.apply(self._init_weights)
 
-    def _init_weights(self, module):
+    
+    def _init_weights(self, module: nn.Module) -> None:
         """
         Initializes the weights of linear and embedding layers with a normal distribution.
+
+        Args:
+            module (nn.Module): The module to initialize.
         """
 
         if isinstance(module, nn.Linear):
@@ -244,17 +253,19 @@ class GPTLanguageModel(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
+    
     def forward(self, idx, targets=None):
         """
         Forward pass of the GPT language model.
 
         Args:
             idx (torch.Tensor): Input tensor of token indices with shape (batch_size, sequence_length).
-            targets (torch.Tensor, optional): Ground truth labels for computing loss (default is None).
+            targets (Optional[torch.Tensor]): Ground truth labels for computing loss (default is None).
 
         Returns:
-            logits (torch.Tensor): Output token logits of shape (batch_size, sequence_length, vocab_size).
-            loss (torch.Tensor or None): Cross-entropy loss, or None if targets is not provided.
+            Tuple[torch.Tensor, Optional[torch.Tensor]]: 
+                - logits (torch.Tensor): Output token logits of shape (batch_size, sequence_length, vocab_size).
+                - loss (Optional[torch.Tensor]): Cross-entropy loss if targets are provided; otherwise, None.
         """
 
         B, T = idx.shape
@@ -275,7 +286,12 @@ class GPTLanguageModel(nn.Module):
 
         return logits, loss
 
-    def generate(self, idx, max_new_tokens, block_size):
+    def generate(
+        self,
+        idx: torch.Tensor,
+        max_new_tokens: int,
+        block_size: int
+    ) -> Tensor:
         """
         Generate new tokens based on a given input sequence.
 

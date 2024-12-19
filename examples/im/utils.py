@@ -3,17 +3,22 @@ import datetime
 import os
 import random
 import numpy as np
+from typing import Any, Tuple
+from torch import nn
+from torch.utils.data import DataLoader
+from argparse import Namespace
+from torch.optim import Optimizer
 
-def transpose(X):
+def transpose(X: torch.Tensor) -> torch.Tensor:
     """
     Transpose a 2D matrix.
     """
     
-    assert len(X.size()) == 2, "data must be 2D"
+    assert X.dim() == 2, "data must be 2D"
     return X.T
 
 
-def set_seed(seed):
+def set_seed(seed: int) -> None:
     """
     Set seed for reproducibility.
     """
@@ -25,7 +30,12 @@ def set_seed(seed):
         torch.cuda.manual_seed_all(seed)
         
 
-def get_test_accuracy(model, loss_fn, test_loader, device):
+def get_test_accuracy(
+    model: nn.Module,
+    loss_fn: nn.Module,
+    test_loader: DataLoader,
+    device: torch.device
+) -> Tuple[float, float]:
     """
     Evaluate the model on the test dataset and compute loss and accuracy.
 
@@ -66,12 +76,21 @@ def get_test_accuracy(model, loss_fn, test_loader, device):
     return avg_loss, accuracy
 
 
-def train(args, model, train_loader, test_loader, optimizer, loss_fn, log_dir, device):
+def train(
+    args: Namespace,
+    model: nn.Module,
+    train_loader: DataLoader,
+    test_loader: DataLoader,
+    optimizer: Optimizer,
+    loss_fn: nn.Module,
+    log_dir: str,
+    device: torch.device
+) -> Tuple[nn.Module, str]:
     """
     Trains the model and logs the results.
 
     Args:
-        args: Configuration object with training parameters.
+        args (Namespace): Configuration object with training parameters.
         model (torch.nn.Module): The model to train.
         train_loader (DataLoader): DataLoader for the training dataset.
         test_loader (DataLoader): DataLoader for the test dataset.

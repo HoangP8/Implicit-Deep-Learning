@@ -1,23 +1,32 @@
 import torch
-import torch.nn as nn
+from torch import nn, Tensor
 import torch.nn.functional as F
 
 
 class IDLHead(nn.Module):
     """One head of self-attention implemented in IDL"""
 
-    def __init__(self, head_size, n_embd, block_size, fixed_point_iter, attention_version, is_low_rank=False, rank=1):
+    def __init__(
+        self,
+        head_size: int,
+        n_embd: int,
+        block_size: int,
+        fixed_point_iter: int,
+        attention_version: str,
+        is_low_rank: bool = False,
+        rank: int = 1
+    ) -> None:
         """
         Initialize the IDL self-attention head.
 
-    Args:
-        head_size (int): The size of the attention head.
-        n_embd (int): Embedding dimension.
-        block_size (int): The block size for masking.
-        fixed_point_iter (int): The number of iterations for fixed-point optimization in DEQ.
-        attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
-        is_low_rank (bool, optional): Whether to use a low-rank approach. Default is False.
-        k (int, optional): The rank for the low-rank approach. Default is 1.
+        Args:
+            head_size (int): The size of the attention head.
+            n_embd (int): Embedding dimension.
+            block_size (int): The block size for masking.
+            fixed_point_iter (int): The number of iterations for fixed-point optimization in DEQ.
+            attention_version (str): Type of attention mechanism to use. Choose 'softmax' or 'lipschitz'.
+            is_low_rank (bool, optional): Whether to use a low-rank approach. Default is False.
+            rank (int, optional): The rank for the low-rank approach. Default is 1.
         """
 
         super().__init__()
@@ -42,7 +51,17 @@ class IDLHead(nn.Module):
         nn.init.xavier_uniform_(self.B)
         self.fixed_point_iter = fixed_point_iter
         
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
+        """
+        Forward pass of the IDL self-attention head.
+
+        Args:
+            x (Tensor): Input tensor of shape (B, T, C).
+
+        Returns:
+            Tensor: Output tensor after self-attention, of shape (B, T, hs).
+        """
+
         B, T, C = x.shape
         B_U = torch.einsum("dk,bnd->bnk", self.B, x)
         X = torch.zeros((B, T, 4 * self.hs), device=x.device, requires_grad=True)
