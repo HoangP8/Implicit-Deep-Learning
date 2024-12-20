@@ -20,54 +20,66 @@ logger = logging.getLogger(__name__)
 
 class HookManager:
     def __init__(self):
+        """
+        HookManager class to collect pre- and post-activations from a model.
+        """
         self.pre_activations = []
         self.post_activations = []
         self.hooks = []
 
     def hook_fn(self, module, input, output):
+        """
+        Hook function to collect pre- and post-activations from a model.
+        """
         if input[0].size() == output.size():
             self.pre_activations.append(input[0].detach())
             self.post_activations.append(output.detach())
 
-    def _apply_hooks(self, module, list_relu):
+    # def _apply_hooks(self, module, list_relu):
+    #     children = list(module.children())
+    #     if len(children) == 0:  # It's a leaf module
+    #         if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
+    #             list_relu.append(module)
+    #     else:
+    #         for child in module.children():
+    #             self._apply_hooks(child, list_relu)  # Recursively apply to children
+
+    # def _apply_all_hooks(self, module):
+    #     children_length = len(list(module.children()))
+    #     if children_length == 0:
+    #         if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
+    #             hook = module.register_forward_hook(self.hook_fn)
+    #             self.hooks.append(hook)
+    #     elif children_length <= 3:
+    #         for child in module.children():
+    #             self._apply_all_hooks(child)
+    #     else:
+    #         for child in module.children():
+    #             relu_layers = []
+    #             self._apply_hooks(child, relu_layers)
+    #             if relu_layers:
+    #                 final_relu = relu_layers[-1]
+    #                 hook = final_relu.register_forward_hook(self.hook_fn)
+    #                 self.hooks.append(hook)
+
+    def _apply_all_hooks(self, module):
+        """
+        Recursively apply hooks to all ReLU and GELU layers in the model.
+        """
         children = list(module.children())
         if len(children) == 0:  # It's a leaf module
             if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
-                list_relu.append(module)
-        else:
-            for child in module.children():
-                self._apply_hooks(child, list_relu)  # Recursively apply to children
-
-    def _apply_all_hooks(self, module):
-        children_length = len(list(module.children()))
-        if children_length == 0:
-            if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
                 hook = module.register_forward_hook(self.hook_fn)
                 self.hooks.append(hook)
-        elif children_length <= 3:
-            for child in module.children():
-                self._apply_all_hooks(child)
         else:
             for child in module.children():
-                relu_layers = []
-                self._apply_hooks(child, relu_layers)
-                if relu_layers:
-                    final_relu = relu_layers[-1]
-                    hook = final_relu.register_forward_hook(self.hook_fn)
-                    self.hooks.append(hook)
-
-    # def _apply_all_hooks(self, module):
-    #     children = list(module.children())
-    #     if len(children) == 0:  # It's a leaf module
-    #         if isinstance(module, torch.nn.ReLU) or isinstance(module, torch.nn.GELU):
-    #             hook = module.register_forward_hook(self.hook_fn)
-    #             self.hooks.append(hook)
-    #     else:
-    #         for child in module.children():
-    #             self._apply_all_hooks(child)  # Recursively apply to children
+                self._apply_all_hooks(child)  # Recursively apply to children
 
     @contextmanager
     def register_hooks(self, model):
+        """
+        Register hooks to all ReLU and GELU layers in the model.
+        """
         self._apply_all_hooks(model)
         try:
             yield
@@ -224,6 +236,8 @@ class SIM():
         config : dict,
         model : torch.nn.Module,
         dataloader : torch.utils.data.DataLoader,
+        states_data_path : Optional[str] = None,
+        save_states_data_path : Optional[str] = None,
     ):
         """
         Train the SIM model.
@@ -232,9 +246,21 @@ class SIM():
             config (dict): Configuration dictionary.
             model (torch.nn.Module): Explicit model (teacher) to extract state data.
             dataloader (torch.utils.data.DataLoader): Training data loader.
+            states_data_path (str, optional): Path to the states data file. Defaults to None.
+            save_states_data_path (str, optional): Path to save the states data file. If provided, the extracted states data will be saved to this file. Defaults to None.
         """
-        logger.info("===== Collecting states =====")
-        states_data = self.get_states(model, dataloader)
+        if states_data_path is not None and save_states_data_path is not None:
+            logger.warning("Both states_data_path and save_states_data_path are provided. Only states_data_path will be used.")
+
+        if states_data_path is None:
+            logger.info("===== Collecting states =====")
+            states_data = self.get_states(model, dataloader)
+            if save_states_data_path is not None:
+                logger.info(f"===== Saving states to {save_states_data_path} =====")
+                np.save(save_states_data_path, states_data)
+        else:
+            logger.info(f"===== Loading states from {states_data_path} =====")
+            states_data = np.load(states_data_path)
 
         logger.info("===== Start training SIM =====")
         start_time = time.time()
