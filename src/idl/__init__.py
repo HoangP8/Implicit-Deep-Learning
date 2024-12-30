@@ -1,1 +1,1 @@
-from .implicit_model import *
+from .implicit_base_model import *
