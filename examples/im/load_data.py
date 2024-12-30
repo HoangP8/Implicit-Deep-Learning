@@ -3,7 +3,10 @@ from torch.utils.data import DataLoader
 import torch
 
 def load_data(args):
-
+    """
+    Load training and testing data loaders for the specified dataset.
+    """
+    
     # MNIST Dataset
     if args.dataset == 'mnist':
         transform = transforms.Compose([
@@ -27,7 +30,7 @@ def load_data(args):
         raise ValueError(f"Unsupported dataset: {args.dataset}")
     
     # Create DataLoaders
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
     
     return train_loader, test_loader
