@@ -7,7 +7,7 @@ import sys
 from typing import Any, Dict, Optional
 from .utils import estimate_loss, get_batch
 sys.path.append('../implicit')
-from idl.attention.implicit_head import IDLHead
+from idl.attention import IDLHead
 
 
 def initialize_idl_heads(args: Any, idl_model: nn.Module) -> None:

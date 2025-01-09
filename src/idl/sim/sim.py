@@ -1,5 +1,8 @@
 """
 Main SIM class that handles defining and training a SIM model.
+TODO: 
+    - fix the config import, change function's arguments to remove the config input
+    - examples with lowrank and other solvers, etc.
 """
 
 import torch
@@ -18,6 +21,38 @@ from .utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
+__activation_types__ = (
+    nn.CELU,
+    nn.ELU,
+    nn.GELU,
+    nn.GLU,
+    nn.Hardshrink,
+    nn.Hardsigmoid,
+    nn.Hardswish,
+    nn.Hardtanh,
+    nn.LeakyReLU,
+    nn.LogSigmoid,
+    nn.LogSoftmax,
+    nn.Mish,
+    nn.MultiheadAttention,
+    nn.PReLU,
+    nn.ReLU,
+    nn.ReLU6,
+    nn.RReLU,
+    nn.SELU,
+    nn.Sigmoid,
+    nn.SiLU,
+    nn.Softmax,
+    nn.Softmax2d,
+    nn.Softmin,
+    nn.Softplus,
+    nn.Softshrink,
+    nn.Softsign,
+    nn.Tanh,
+    nn.Tanhshrink,
+    nn.Threshold,
+)
+
 class HookManager:
     def __init__(self):
         """
@@ -27,7 +62,7 @@ class HookManager:
         self.post_activations = []
         self.hooks = []
 
-    def hook_fn(self, module, input, output):
+    def hook_fn(self, module : torch.nn.Module, input : torch.Tensor, output : torch.Tensor):
         """
         Hook function to collect pre- and post-activations from a model.
         """
@@ -35,52 +70,65 @@ class HookManager:
             self.pre_activations.append(input[0].detach())
             self.post_activations.append(output.detach())
 
-    # def _apply_hooks(self, module, list_relu):
-    #     children = list(module.children())
-    #     if len(children) == 0:  # It's a leaf module
-    #         if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
-    #             list_relu.append(module)
-    #     else:
-    #         for child in module.children():
-    #             self._apply_hooks(child, list_relu)  # Recursively apply to children
-
-    # def _apply_all_hooks(self, module):
-    #     children_length = len(list(module.children()))
-    #     if children_length == 0:
-    #         if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
-    #             hook = module.register_forward_hook(self.hook_fn)
-    #             self.hooks.append(hook)
-    #     elif children_length <= 3:
-    #         for child in module.children():
-    #             self._apply_all_hooks(child)
-    #     else:
-    #         for child in module.children():
-    #             relu_layers = []
-    #             self._apply_hooks(child, relu_layers)
-    #             if relu_layers:
-    #                 final_relu = relu_layers[-1]
-    #                 hook = final_relu.register_forward_hook(self.hook_fn)
-    #                 self.hooks.append(hook)
-
-    def _apply_all_hooks(self, module):
+    def _apply_all_hooks(self, module : torch.nn.Module):
         """
-        Recursively apply hooks to all ReLU and GELU layers in the model.
+        Recursively apply hooks to all activation layers in the model.
         """
         children = list(module.children())
         if len(children) == 0:  # It's a leaf module
-            if isinstance(module, (torch.nn.ReLU, torch.nn.GELU, torch.nn.Sigmoid)):
+            if isinstance(module, __activation_types__): # check if the module is an activation layer
                 hook = module.register_forward_hook(self.hook_fn)
                 self.hooks.append(hook)
         else:
             for child in module.children():
                 self._apply_all_hooks(child)  # Recursively apply to children
+    
+    def _check_modules(self, module : torch.nn.Module, list_relu : List[torch.nn.Module]):
+        """
+        Recursively look for activation layers inside the module.
+        """
+        children = list(module.children())
+        if len(children) == 0:  # It's a leaf module
+            if isinstance(module, __activation_types__):
+                list_relu.append(module)
+        else:
+            for child in module.children():
+                self._check_modules(child, list_relu)  # Recursively apply to children
+
+    def _apply_n_hooks(self, module : torch.nn.Module, n : int = 3):
+        """
+        Skip some activations and apply hooks only to the last activation layer of each layer block.
+
+        Args:
+            module (torch.nn.Module): The module to apply hooks to.
+            n (int): The threshold to define a block of layers. Only skip layers when the number of children is greater than n.
+        """
+        children_length = len(list(module.children()))
+        if children_length == 0:
+            if isinstance(module, __activation_types__):
+                hook = module.register_forward_hook(self.hook_fn)
+                self.hooks.append(hook)
+        elif children_length <= n: # if the number of children is less than n, apply hooks to all children
+            for child in module.children():
+                self._apply_n_hooks(child, n)
+        else: # if the number of children is greater than n, apply hooks to the last activation of the layer block
+            for child in module.children():
+                relu_layers = []
+                self._check_modules(child, relu_layers)
+                if relu_layers:
+                    final_relu = relu_layers[-1] # get only the last activation of a block of layers
+                    hook = final_relu.register_forward_hook(self.hook_fn)
+                    self.hooks.append(hook)
 
     @contextmanager
-    def register_hooks(self, model):
+    def register_hooks(self, model : torch.nn.Module, skip_layers : Optional[int] = None):
         """
-        Register hooks to all ReLU and GELU layers in the model.
+        Register hooks to all activation layers in the model.
         """
-        self._apply_all_hooks(model)
+        if skip_layers is None:
+            self._apply_all_hooks(model)
+        else:
+            self._apply_n_hooks(model, skip_layers)
         try:
             yield
         finally:
@@ -94,9 +142,11 @@ class HookManager:
 class SIM():
     def __init__(
         self, 
+        activation_fn : Callable = nn.ReLU,
+        skip_layers : Optional[int] = None,
+        standardize : bool = False,
         device : Optional[Union[str, torch.device]] = None, 
         dtype : Optional[Union[str, torch.dtype]] = None,
-        standardize : bool = False,
     ):
         """
         SIM base class.
@@ -107,6 +157,8 @@ class SIM():
             dtype (str or torch.dtype, optional): Data type for SIM. Defaults to None.
             standardize (bool, optional): Whether to standardize the input data using scipy StandardScaler. Defaults to False.
         """
+        self.activation_fn = activation_fn
+        self.skip_layers = skip_layers
         self.device = device
         self.dtype = dtype
         self.weights = {
@@ -166,7 +218,7 @@ class SIM():
             input_samples = input_samples.to(model.device)
 
             # Run the model with hooks and no gradient calculations
-            with hooks.register_hooks(model), torch.no_grad():
+            with hooks.register_hooks(model, skip_layers=self.skip_layers), torch.no_grad():
                 outputs = model(input_samples)
 
                 # Accumulate outputs
@@ -227,7 +279,7 @@ class SIM():
         for weight in self.weights.keys():
             assert self.weights[weight] is not None, f"Weight matrix {weight} is not trained"
 
-        X = fixpoint_iteration(self.weights['A'], self.weights['B'], input, self.config.activation, self.device)
+        X = fixpoint_iteration(self.weights['A'], self.weights['B'], input, self.activation_fn, self.device)
         Y = X @ self.weights['C'] + self.weights['D'] @ input
         return Y
     

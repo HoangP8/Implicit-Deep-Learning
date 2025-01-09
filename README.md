@@ -23,7 +23,9 @@ Project
 │   │   └─ 📂sim
 │   │   │   ├─ 📃base_function.py
 │   │   │   └─ 📃SIM.py
-└─ 📃setup.py              
+└─ 📃LICENSE
+└─ 📃README.md
+└─ 📃pyproject.toml
 ```
 
 ## Interface

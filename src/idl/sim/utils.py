@@ -25,7 +25,7 @@ def csr_to_sparse_tensor(csr, device):
 
 
 @torch.no_grad()
-def fixpoint_iteration(A, B, U, activation, device, max_iter=50000, atol=1e-6, patience=1000):
+def fixpoint_iteration(A, B, U, activation_fn, device, max_iter=50000, atol=1e-6, patience=1000):
     """
     Compute X = phi(A @ X + B @ U) until convergence and return X, with support for sparse matrices.
     """
@@ -48,23 +48,16 @@ def fixpoint_iteration(A, B, U, activation, device, max_iter=50000, atol=1e-6, p
     else:
         U = U.float().to(device, dtype=B.dtype)
 
-    if activation == "relu":
-        activation_func = F.relu
-    elif activation == "sigmoid":
-        activation_func = F.sigmoid
-    else:
-        raise NotImplementedError
-
     # Initialize X with zeros on GPU
     n, m = A.shape[-1], U.shape[-1]
     X = torch.zeros((n, m), device=device, dtype=A.dtype)
-    next_X = activation_func(torch.sparse.mm(A, X) + torch.sparse.mm(B, U))
+    next_X = activation_fn(torch.sparse.mm(A, X) + torch.sparse.mm(B, U))
 
     min_diff = np.inf
     iteration = 0
     while True:
         X = next_X.clone()
-        next_X = activation_func(torch.sparse.mm(A, next_X) + torch.sparse.mm(B, U))
+        next_X = activation_fn(torch.sparse.mm(A, next_X) + torch.sparse.mm(B, U))
 
         # Compute the infinite norm of the difference
         difference = torch.linalg.norm(next_X - X, np.inf).item()

@@ -40,7 +40,7 @@ train_loader, test_loader = load_data()
 explict_model = FashionMNIST_FFNN(28 * 28, 10)
 explict_model.load_state_dict(torch.load("models/explicit_model.pth"))
 
-sim = SIM(device="cuda", dtype=torch.float32)
+sim = SIM(activation_fn=torch.nn.ReLU, device="cuda", dtype=torch.float32)
 
 # Train SIM
 sim.train(explict_model, train_loader)

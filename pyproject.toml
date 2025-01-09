@@ -2,15 +2,40 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/idl"]
+
 [project]
 name = "idl"
 readme = "README.md"
 license = { file = "LICENSE" }
 version = "0.0.1"
 requires-python = ">=3.10"
+dependencies = [
+    "torch<=2.6",
+    "scipy>=1.10.0",
+    "numpy>=1.24.0",
+    "scikit-learn>=1.2.0"
+]
 
-[tool.hatch.build.targets.wheel]
-packages = ["idl", "sim"]
+authors = [
+    { name = "Hoang Phan", email = "21hoang.p@vinuni.edu.vn" },
+    { name = "Bao Tran", email = "21bao.tq@vinuni.edu.vn" },
+    { name = "Laurent El Ghaoui", email = "laurent.eg@vinuni.edu.vn" },
+]
+maintainers = [
+    { name = "Hoang Phan", email = "21hoang.p@vinuni.edu.vn" },
+    { name = "Bao Tran", email = "21bao.tq@vinuni.edu.vn" },
+]
+description = "Official package of Implicit Deep Learning and State-driven Implicit Models"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+]
 
-[tool.isort]
-known_third_party = []
+[project.urls]
+Homepage = ""
+Documentation = ""
+Repository = "https://github.com/HoangP8/Implicit-Deep-Learning"
+Issues = "https://github.com/HoangP8/Implicit-Deep-Learning/issues"
