@@ -143,6 +143,7 @@ class SIM():
     def __init__(
         self,
         activation_fn : Callable = nn.ReLU,
+        kappa : float = 0.99,
         atol : float = 1e-6,
         skip_layers : Optional[int] = None,
         standardize : bool = False,
@@ -160,6 +161,7 @@ class SIM():
         """
         self.activation_fn = activation_fn
         self.atol = atol
+        self.kappa = kappa
         self.skip_layers = skip_layers
         self.device = device
         self.dtype = dtype
@@ -333,6 +335,7 @@ class SIM():
             'activation_fn': self.activation_fn,
             'device': self.device,
             'atol': self.atol,
+            'kappa': self.kappa,
         }
 
         A, B, C, D = solver.solve(states_data['X'], states_data['U'], states_data['Z'], states_data['Y'], training_config)

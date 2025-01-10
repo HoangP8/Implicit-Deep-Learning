@@ -14,6 +14,7 @@ requires-python = ">=3.10"
 dependencies = [
     "torch<=2.6",
     "scipy>=1.10.0",
+    "cvxpy>=1.3.0",
     "numpy>=1.24.0",
     "scikit-learn>=1.2.0",
     "matplotlib>=3.7.0",
@@ -24,6 +25,11 @@ dependencies = [
 authors = [
     { name = "Hoang Phan", email = "21hoang.p@vinuni.edu.vn" },
     { name = "Bao Tran", email = "21bao.tq@vinuni.edu.vn" },
+    { name = "Chi Nguyen", email = "22chi.nh@vinuni.edu.vn" },
+    { name = "Bao Truong", email = "21bao.tg@vinuni.edu.vn" },
+    { name = "Thanh Tran", email = "21thanh.tq@vinuni.edu.vn" },
+    { name = "Khai Nguyen", email = "khai.nx@vinuni.edu.vn" },
+    { name = "Hong Chu", email = "hong.ctm@vinuni.edu.vn" },
     { name = "Laurent El Ghaoui", email = "laurent.eg@vinuni.edu.vn" },
 ]
 maintainers = [

@@ -48,6 +48,8 @@ sim = SIM(activation_fn=torch.nn.ReLU, device="cuda", dtype=torch.float32)
 solver = ADMMSolver(
     num_epoch_ab=1500,
     num_epoch_cd=120,
+    lambda_y=1.0,
+    lambda_z=1.0,
     rho_ab=1.0,
     rho_cd=1.0,
     batch_feature_size=120,
