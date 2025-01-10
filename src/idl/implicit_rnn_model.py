@@ -1,10 +1,17 @@
 from .implicit_base_model import ImplicitModel
 import torch
-from torch import nn
+from torch import nn, Tensor
+from typing import Any, Tuple
 
 
 class ImplicitRNNCell(nn.Module):
-    def __init__(self, input_dim, implicit_hidden_dim, hidden_dim, **kwargs):
+    def __init__(
+        self,
+        input_dim: int,
+        implicit_hidden_dim: int,
+        hidden_dim: int,
+        **kwargs: Any
+    ) -> None:
         """
         An RNN cell that utilizes an implicit model for recurrent operations.
         
@@ -20,15 +27,17 @@ class ImplicitRNNCell(nn.Module):
             hidden_dim (int): Dimensionality of the recurrent hidden state.
             **kwargs: Additional keyword arguments for the underlying ImplicitModel.
         """
-        super().__init__()
-        self.hidden_dim = hidden_dim
         
-        self.layer = ImplicitModel(hidden_dim=implicit_hidden_dim, 
-                                    input_dim=input_dim+hidden_dim, 
-                                    output_dim=hidden_dim, 
-                                    **kwargs)
+        super().__init__()
+        self.hidden_dim: int = hidden_dim
+        self.layer: ImplicitModel = ImplicitModel(
+            hidden_dim=implicit_hidden_dim, 
+            input_dim=input_dim + hidden_dim, 
+            output_dim=hidden_dim, 
+            **kwargs
+        )
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
         """
         Forward pass of the ImplicitRNNCell.
 
@@ -37,8 +46,8 @@ class ImplicitRNNCell(nn.Module):
 
         Returns:
             Tuple[Tensor, Tensor]:
-                - outputs: Hidden states for all timesteps, shape (batch_size, seq_len, hidden_dim).
-                - h: Final hidden state, shape (batch_size, hidden_dim).
+                - outputs (Tensor): Hidden states for all timesteps, shape (batch_size, seq_len, hidden_dim).
+                - h (Tensor): Final hidden state, shape (batch_size, hidden_dim).
         """
 
         outputs = torch.empty(*x.shape[:-1], self.hidden_dim, device=x.device)
@@ -63,15 +72,28 @@ class ImplicitRNN(nn.Module):
         implicit_hidden_dim (int): Hidden dimension in the implicit model.
         hidden_dim (int): Size of the recurrent hidden state.
         output_dim (int): Size of the output features.
-        **kwargs: Additional keyword arguments for ImplicitRNNCell.
+        **kwargs (Any): Additional keyword arguments for ImplicitRNNCell.
     """
 
-    def __init__(self, input_dim, implicit_hidden_dim, hidden_dim, output_dim, **kwargs):
-        super().__init__()
-        self.recurrent = ImplicitRNNCell(input_dim, implicit_hidden_dim, hidden_dim, **kwargs)
-        self.linear = nn.Linear(hidden_dim, output_dim)
+    def __init__(
+        self,
+        input_dim: int,
+        implicit_hidden_dim: int,
+        hidden_dim: int,
+        output_dim: int,
+        **kwargs: Any
+    ) -> None:
         
-    def forward(self, x):
+        super().__init__()
+        self.recurrent: ImplicitRNNCell = ImplicitRNNCell(
+            input_dim=input_dim,
+            implicit_hidden_dim=implicit_hidden_dim,
+            hidden_dim=hidden_dim,
+            **kwargs
+        )
+        self.linear: nn.Linear = nn.Linear(hidden_dim, output_dim)
+        
+    def forward(self, x: Tensor) -> Tensor:
         """
         Forward pass of the ImplicitRNN.
 

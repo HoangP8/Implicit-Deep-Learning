@@ -54,7 +54,7 @@ def load_data(args):
         
         if os.path.exists(checkpoint_path):
             print("Loading tokenized data from checkpoint.")
-            data = torch.load(checkpoint_path)
+            data = torch.load(checkpoint_path, weights_only=True)
         else:
             print("Downloading and preparing Wikitext data")
             raw_data_source = 'https://wikitext.smerity.com/wikitext-103-raw-v1.zip'

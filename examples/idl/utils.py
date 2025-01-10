@@ -1,54 +1,19 @@
 import torch
 import datetime
 import os
-import random
-import numpy as np
-from typing import Any, Tuple
-from torch import nn
-from torch.utils.data import DataLoader
-from argparse import Namespace
-from torch.optim import Optimizer
 
-def transpose(X: torch.Tensor) -> torch.Tensor:
+def transpose(X):
     """
-    Transpose a 2D matrix.
+    Convenient function to transpose a matrix.
     """
-    
-    assert X.dim() == 2, "data must be 2D"
+    assert len(X.size()) == 2, "data must be 2D"
     return X.T
 
 
-def set_seed(seed: int) -> None:
+def get_test_accuracy(model, loss_fn, test_loader, device):
     """
-    Set seed for reproducibility.
+    Run the model with the test dataset and compute the loss and accuracy.
     """
-    random.seed(seed) 
-    np.random.seed(seed) 
-    torch.manual_seed(seed) 
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-        
-
-def get_test_accuracy(
-    model: nn.Module,
-    loss_fn: nn.Module,
-    test_loader: DataLoader,
-    device: torch.device
-) -> Tuple[float, float]:
-    """
-    Evaluate the model on the test dataset and compute loss and accuracy.
-
-    Args:
-        model (torch.nn.Module): The trained model to evaluate.
-        loss_fn (torch.nn.Module): The loss function used for evaluation.
-        test_loader (DataLoader): DataLoader for the test dataset.
-        device (torch.device): Device to perform computation on (CPU or GPU).
-
-    Returns:
-        Tuple[float, float]: Average loss and accuracy on the test dataset.
-    """
-    
     model.eval() # eval mode
     total_loss = 0.0
     correct_predictions = 0
@@ -76,31 +41,22 @@ def get_test_accuracy(
     return avg_loss, accuracy
 
 
-def train(
-    args: Namespace,
-    model: nn.Module,
-    train_loader: DataLoader,
-    test_loader: DataLoader,
-    optimizer: Optimizer,
-    loss_fn: nn.Module,
-    log_dir: str,
-    device: torch.device
-) -> Tuple[nn.Module, str]:
+def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs, log_dir, device):
     """
-    Trains the model and logs the results.
+    Trains the model for a specified number of epochs and logs the results.
 
     Args:
-        args (Namespace): Configuration object with training parameters.
         model (torch.nn.Module): The model to train.
-        train_loader (DataLoader): DataLoader for the training dataset.
-        test_loader (DataLoader): DataLoader for the test dataset.
+        train_loader (torch.utils.data.DataLoader): The training data loader.
+        test_loader (torch.utils.data.DataLoader): The test data loader.
         optimizer (torch.optim.Optimizer): The optimizer used for training.
-        loss_fn (torch.nn.Module): Loss function to minimize.
-        log_dir (str): Directory to save log files.
-        device (torch.device): Device to perform training on (CPU or GPU).
-        
+        loss_fn (torch.nn.Module): The loss function to minimize.
+        num_epochs (int): The number of epochs to train the model.
+        log_dir (str): The base directory to save log files.
+        device (torch.device, optional): The device (CPU or GPU) to perform training on.
+
     Returns:
-        Tuple[torch.nn.Module, str]: The trained model and the path to the log file.
+        tuple: The trained model and the log file path.
     """
 
     model.to(device)
@@ -114,12 +70,10 @@ def train(
         for arg, value in vars(args).items():
             f.write(f"{arg}: {value}\n")
         f.write("\n")
-        f.write(f'Model size: {sum(p.numel() for p in model.parameters())} parameters\n')
-        f.write("\n")
         f.write("Epoch,Train Loss,Train Accuracy,Test Loss,Test Accuracy\n")
 
     # Training loop
-    for epoch in range(args.epochs):
+    for epoch in range(num_epochs):
         model.train()  # train mode
         train_loss = 0.0
         correct_train = 0
@@ -139,41 +93,37 @@ def train(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            
-            # Compute training accuracy
+
             predicted_labels = torch.argmax(predictions, dim=-1)
             correct_train += (predicted_labels == targets).sum().item()
             total_train += targets.size(0)
             train_loss += loss.item()
 
-            # Log every 100 batches
             if batch_idx % 100 == 0:
                 test_loss, test_accuracy = get_test_accuracy(model, loss_fn, test_loader, device)
 
-                print(f"Epoch {epoch + 1}/{args.epochs} - "
+                print(f"Epoch {epoch + 1}/{num_epochs} - "
                       f"Batch {batch_idx + 1}/{total_batches}: "
                       f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
                       f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%")
 
                 with open(log_file, 'a') as f:
-                    f.write(f"Epoch {epoch + 1}/{args.epochs} - "
+                    f.write(f"Epoch {epoch + 1}/{num_epochs} - "
                             f"Batch {batch_idx + 1}/{total_batches}: "
                             f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
                             f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%\n")
 
             batch_idx += 1
 
-        # Compute average training metrics for each epoch
         avg_train_loss = train_loss / len(train_loader)
         train_accuracy = (correct_train / total_train) * 100
         test_loss, test_accuracy = get_test_accuracy(model, loss_fn, test_loader, device)
 
-        # Log epoch results
-        print(f"Epoch {epoch + 1}/{args.epochs}: "
+        print(f"Epoch {epoch + 1}/{num_epochs}: "
               f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
               f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%")
         with open(log_file, 'a') as f:
-            f.write(f"Epoch {epoch + 1}/{args.epochs}: "
+            f.write(f"Epoch {epoch + 1}/{num_epochs}: "
                     f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
                     f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%\n")
 
