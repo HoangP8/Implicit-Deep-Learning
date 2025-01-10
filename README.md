@@ -30,7 +30,7 @@ Project
 Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN``:
 
 ```python
-from idl.ImplicitBaseModel import ImplicitModel
+from idl import ImplicitModel
 
 # Normal data processing
 train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
@@ -70,7 +70,7 @@ model = ImplicitModel(hidden_dim=100, input_dim=3072, output_dim=10, low_rank=Tr
 
 Here’s a sample usage of the `IDLHead`:
 ```python
-from idl.implicit_head import IDLHead
+from idl import IDLHead
 
 # Load data as normal
 train_data, val_data = load_data()
