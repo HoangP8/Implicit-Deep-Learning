@@ -27,10 +27,10 @@ Project
 
 ## Interface
 
-Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN`` within our framework:
+Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN``:
 
 ```python
-from idl import ImplicitBaseModel
+from idl.ImplicitBaseModel import ImplicitModel
 
 # Normal data processing
 train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
@@ -52,6 +52,9 @@ for _ in range(epoch):
     ...
 ```
 
+
+
+
 - By default, the parameters `mitr=grad_mitr=300`, and `tol=grad_tol=3e-6`.
 - The default value of `low_rank` is `False`, meaning the model is full rank by default. Users can easily switch to a low-rank version.
 - Users need to define `hidden_dim` for the implicit model. The `input_dim` represents the input dimension vector; similarly for `output_dim`.
@@ -64,6 +67,29 @@ model = ImplicitModel(hidden_dim=100, input_dim=3072, output_dim=10, low_rank=Tr
 ```
 - Indeed users can change any parameters they want, by setting the value of parameters.
 - Same approach for `ImplicitRNN` with time-series dataset.
+
+Here’s a sample usage of the `IDLHead`:
+```python
+from idl.implicit_head import IDLHead
+
+# Load data as normal
+train_data, val_data = load_data()
+
+# Define the Explicit Transformer Model
+model = GPTLanguageModel(vocab_size=..., n_embd=..., block_size=...,
+                      n_layer=..., n_head=..., dropout=...)
+
+# Initialize IDL attention heads in the model.
+for i in range(n_layer):
+    model.blocks[i].sa.heads = nn.ModuleList([
+        IDLHead(n_embd // n_head, n_embd, block_size, fixed_point_iter, 
+                attention_version, is_low_rank, rank) 
+        for _ in range(args.n_head)
+    ])
+
+# Normal model training
+train_model(args, model, train_data, val_data, device, log_file)
+```
 
 ## TODO
 
