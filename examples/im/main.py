@@ -7,7 +7,7 @@ from .utils import train, set_seed
 import os
 import sys
 sys.path.append('../implicit')
-from idl.implicit_base_model import ImplicitModel
+from idl import ImplicitModel
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train an implicit model on MNIST or CIFAR-10")
