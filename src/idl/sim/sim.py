@@ -141,8 +141,9 @@ class HookManager:
 
 class SIM():
     def __init__(
-        self, 
+        self,
         activation_fn : Callable = nn.ReLU,
+        atol : float = 1e-6,
         skip_layers : Optional[int] = None,
         standardize : bool = False,
         device : Optional[Union[str, torch.device]] = None, 
@@ -158,6 +159,7 @@ class SIM():
             standardize (bool, optional): Whether to standardize the input data using scipy StandardScaler. Defaults to False.
         """
         self.activation_fn = activation_fn
+        self.atol = atol
         self.skip_layers = skip_layers
         self.device = device
         self.dtype = dtype
@@ -185,17 +187,39 @@ class SIM():
                 self.weights[weight] = self.weights[weight].to(self.device, self.dtype)
         return self
     
+    def __call__(
+        self, 
+        input : torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Forward pass of a standard implicit model.
+
+        Args:
+            input (torch.Tensor): Input data with shape (batch_size, input_dim).
+        
+        Returns:
+            output (torch.Tensor): Output data with shape (batch_size, output_dim).
+        """
+        for weight in self.weights.keys():
+            assert self.weights[weight] is not None, f"Weight matrix {weight} is not trained"
+
+        X = fixpoint_iteration(self.weights['A'], self.weights['B'], input, self.activation_fn, self.device, atol=self.atol)
+        Y = X @ self.weights['C'] + self.weights['D'] @ input
+
+        return Y
+    
     def get_states(
             self, 
             model : torch.nn.Module, 
-            dataloader : torch.utils.data.DataLoader,
+            inputs : torch.Tensor,
     ) -> Dict[str, np.ndarray]:
         """
         Extract the states data (pre-activations, post-activations, inputs, outputs) from the explicit model.
+        The dataloader should only load a small amount of data to avoid memory issues.
 
         Args:
             model (torch.nn.Module): Explicit model (teacher) to extract state data.
-            dataloader (torch.utils.data.DataLoader): Training data loader.
+            inputs (torch.Tensor): Input data with shape (batch_size, input_dim).
         
         Returns:
             states_data (dict): Dictionary containing the states data:
@@ -206,6 +230,7 @@ class SIM():
         """
         model.requires_grad_(False)
         model.eval()
+        model.to(self.device)
         
         hooks = HookManager()
 
@@ -214,8 +239,8 @@ class SIM():
         pre_activations_accumulated = []
         post_activations_accumulated = []
 
-        for input_samples, _ in dataloader:
-            input_samples = input_samples.to(model.device)
+        for input_samples in inputs:
+            input_samples = input_samples.to(self.device)
 
             # Run the model with hooks and no gradient calculations
             with hooks.register_hooks(model, skip_layers=self.skip_layers), torch.no_grad():
@@ -262,63 +287,57 @@ class SIM():
             states_data['Y'] = self.scaler.fit_transform(states_data['Y'].T).T
 
         return states_data
-
-    def __call__(
-        self, 
-        input : torch.Tensor,
-    ) -> torch.Tensor:
-        """
-        Forward pass of a standard implicit model.
-
-        Args:
-            input (torch.Tensor): Input data with shape (batch_size, input_dim).
-        
-        Returns:
-            output (torch.Tensor): Output data with shape (batch_size, output_dim).
-        """
-        for weight in self.weights.keys():
-            assert self.weights[weight] is not None, f"Weight matrix {weight} is not trained"
-
-        X = fixpoint_iteration(self.weights['A'], self.weights['B'], input, self.activation_fn, self.device)
-        Y = X @ self.weights['C'] + self.weights['D'] @ input
-        return Y
     
     def train(
-        self, 
-        config : dict,
-        model : torch.nn.Module,
-        dataloader : torch.utils.data.DataLoader,
+        self,
+        solver : Callable,
+        model : Optional[torch.nn.Module] = None,
+        dataloader : Optional[torch.utils.data.DataLoader] = None,
         states_data_path : Optional[str] = None,
-        save_states_data_path : Optional[str] = None,
+        save_states_path : Optional[str] = None,
     ):
         """
         Train the SIM model.
 
         Args:
-            config (dict): Configuration dictionary.
             model (torch.nn.Module): Explicit model (teacher) to extract state data.
             dataloader (torch.utils.data.DataLoader): Training data loader.
             states_data_path (str, optional): Path to the states data file. Defaults to None.
-            save_states_data_path (str, optional): Path to save the states data file. If provided, the extracted states data will be saved to this file. Defaults to None.
+            save_states_path (str, optional): Path to save the states data file. If provided, the extracted states data will be saved to this file. Defaults to None.
+            solver (str, optional): Solver to use for training. Defaults to "mosek".
+            regen_states (bool, optional): Whether to regenerate states data. Defaults to False.
+            tol (float, optional): Set weights less than tol to 0. Defaults to 1e-6.
         """
-        if states_data_path is not None and save_states_data_path is not None:
-            logger.warning("Both states_data_path and save_states_data_path are provided. Only states_data_path will be used.")
+        # check function arguments for states extraction
+        if model is None and states_data_path is None:
+            raise ValueError("Either model or states_data_path must be provided")
+        elif model is not None and dataloader is None:
+            raise ValueError("dataloader must be provided for states extraction")
+
+        if states_data_path is not None and save_states_path is not None:
+            logger.warning("Both states_data_path and save_states_path are provided. Only states_data_path will be used.")
 
         if states_data_path is None:
             logger.info("===== Collecting states =====")
             states_data = self.get_states(model, dataloader)
-            if save_states_data_path is not None:
-                logger.info(f"===== Saving states to {save_states_data_path} =====")
-                np.save(save_states_data_path, states_data)
+            if save_states_path is not None:
+                logger.info(f"===== Saving states to {save_states_path} =====")
+                np.save(save_states_path, states_data)
         else:
             logger.info(f"===== Loading states from {states_data_path} =====")
             states_data = np.load(states_data_path)
 
         logger.info("===== Start training SIM =====")
-        start_time = time.time()
-        A, B, C, D = solve(states_data['X'], states_data['U'], states_data['Z'], states_data['Y'], config)
-        end_time = time.time()
-        logger.info(f"===== Training SIM finished in {(end_time - start_time):.4f} seconds =====")
+
+        training_config = {
+            'activation_fn': self.activation_fn,
+            'device': self.device,
+            'atol': self.atol,
+        }
+
+        A, B, C, D = solver.solve(states_data['X'], states_data['U'], states_data['Z'], states_data['Y'], training_config)
+
+        logger.info(f"===== Training finished =====")
 
         self.weights['A'] = A
         self.weights['B'] = B

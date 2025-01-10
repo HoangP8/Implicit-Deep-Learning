@@ -214,7 +214,10 @@ def parallel_solve_matrix(X_shm, U_shm, YZ, is_y, problem_size, config):
     return A, B
 
 
-def parallel_solve(X, U, Z, Y, config):
+def mosek_solver(X, U, Z, Y, config):
+    """
+    Wrapper for using mosek.
+    """
     n, m, p, q = X.shape[0], X.shape[1], U.shape[0], Y.shape[0]
 
     (X_shm, U_shm), (X, U) = create_shared_memory_block([X, U])

@@ -16,7 +16,7 @@ from sim.utils import fixpoint_iteration, plot_heatmaps_and_histograms
 logger = logging.getLogger(__name__)
 
 
-def parallel_solve(X, U, Z, Y, config):
+def projected_gd_lowrank_solver(X, U, Z, Y, config):
     n, m, p, q = X.shape[0], X.shape[1], U.shape[0], Y.shape[0]
 
     X, U, Z = torch.tensor(X), torch.tensor(U), torch.tensor(Z)

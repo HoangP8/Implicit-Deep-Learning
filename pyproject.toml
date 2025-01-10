@@ -15,7 +15,10 @@ dependencies = [
     "torch<=2.6",
     "scipy>=1.10.0",
     "numpy>=1.24.0",
-    "scikit-learn>=1.2.0"
+    "scikit-learn>=1.2.0",
+    "matplotlib>=3.7.0",
+    "mosek>=9.5.0",
+    "tqdm>=4.66.0",
 ]
 
 authors = [
@@ -31,7 +34,6 @@ description = "Official package of Implicit Deep Learning and State-driven Impli
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "Programming Language :: Python",
 ]
 
 [project.urls]
@@ -39,3 +41,4 @@ Homepage = ""
 Documentation = ""
 Repository = "https://github.com/HoangP8/Implicit-Deep-Learning"
 Issues = "https://github.com/HoangP8/Implicit-Deep-Learning/issues"
+

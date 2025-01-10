@@ -10,20 +10,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-from sim.utils import fixpoint_iteration, plot_heatmaps_and_histograms
+from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
 
-def setup_process(rank, world_size, backend='nccl'):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '3090'
-    dist.init_process_group(backend, rank=rank, world_size=world_size)
-
-def cleanup():
-    dist.destroy_process_group()
-
-def parallel_solve(X, U, Z, Y, config):
+def admm_solver(X, U, Z, Y, config):
     n, m, p, q = X.shape[0], X.shape[1], U.shape[0], Y.shape[0]
 
     X, U, Z, Y = torch.tensor(X), torch.tensor(U), torch.tensor(Z), torch.tensor(Y)
@@ -48,11 +40,10 @@ def parallel_solve(X, U, Z, Y, config):
 
 
 def parallel_solve_matrix(X, Y, is_y, n, config):
-    gpu_ids = config.gd.gpu_list
-    world_size = len(gpu_ids)
+    device = torch.device(config.device)
     total_rows = Y.shape[1]
     batch_rows_length = config.admm.batch_feature_size
-    num_batches = total_rows // (batch_rows_length * world_size) + 1
+    num_batches = total_rows // (batch_rows_length) + 1
 
     W = None
     loss = 0.0
@@ -60,46 +51,22 @@ def parallel_solve_matrix(X, Y, is_y, n, config):
 
         logger.info(f"Solving batch feature {k+1}/{num_batches}")
 
-        start_idx = k * batch_rows_length * world_size
-        end_idx = min((k + 1) * batch_rows_length * world_size, total_rows)
+        start_idx = k * batch_rows_length
+        end_idx = min((k + 1) * batch_rows_length, total_rows)
         Y_batch = Y[:, start_idx:end_idx]
-
-        # Multiprocessing: spawn multiple processes with torch.multiprocessing
-        manager = mp.Manager()
-        return_dict = manager.dict()
-
-        mp.set_start_method('spawn', force=True)
-        processes = []
-        for rank in range(world_size):
-            p = mp.Process(target=run_solve_opt_problem, args=(rank, world_size, X, Y_batch, batch_rows_length, is_y, n, config, return_dict))
-            processes.append(p)
-            p.start()
-        for p in processes:
-            p.join()
         
-        # Aggregate results from all processes
-        results = [return_dict[i][0] for i in range(world_size)]
-        W_k = np.vstack(results)
+        W_k, loss_k = run_solve_opt_problem(X, Y_batch, is_y, n, k, config, device)
+        
         W = np.vstack([W, W_k]) if W is not None else W_k
 
-        loss += np.sum([return_dict[i][1] for i in range(world_size)])
-
-        del W_k, results, return_dict
-        gc.collect()
+        loss += loss_k
     
     logger.info(f"Total Lasso loss: {loss}")
-        
+    
     return W
 
 
-def run_solve_opt_problem(rank, world_size, X, Y, batch_rows_length, is_y, n, config, return_dict):
-    setup_process(rank, world_size)
-    
-    # Set the correct device for this process
-    gpu_id = config.gd.gpu_list[rank]
-    torch.cuda.set_device(gpu_id)
-    device = torch.device(f"cuda:{gpu_id}")
-
+def run_solve_opt_problem(X, Y, is_y, n, k, config, device):
     if is_y:
         num_epoch = config.gd.num_epoch_cd
         rho = config.admm.rho_cd
@@ -110,8 +77,6 @@ def run_solve_opt_problem(rank, world_size, X, Y, batch_rows_length, is_y, n, co
         rho = config.admm.rho_ab
         lambda_yz = config.sim.lambda_z
         tau = config.admm.tau_ab
-
-    Y = Y[:,rank*batch_rows_length:(rank+1)*batch_rows_length]
 
     if is_y:
         admm = ADMM_CD(X.shape[1], Y.shape[1], rho, lambda_yz, tau=tau, device=device)
@@ -133,11 +98,11 @@ def run_solve_opt_problem(rank, world_size, X, Y, batch_rows_length, is_y, n, co
     plt.xlabel("Epoch")
     plt.ylabel("Lasso Objective")
     plt.yscale("log")
-    plt.title(f"{rank} Training Loss")
-    plt.savefig(f"loss_{rank}_isy_{is_y}.png")
+    plt.title(f"Training Loss")
+    plt.savefig(f"loss_k_{k}_isy_{is_y}.png")
 
     # Save the loss trace
-    np.save(f"loss_trace_{rank}_isy_{is_y}.npy", losses)
+    np.save(f"loss_trace_k_{k}_isy_{is_y}.npy", losses)
 
     if is_y:
         result = admm.X.T.clone().detach().cpu().numpy()
@@ -146,10 +111,7 @@ def run_solve_opt_problem(rank, world_size, X, Y, batch_rows_length, is_y, n, co
 
     result[np.abs(result) <= config.sim.tol] = 0
 
-    # Store the result in the shared dictionary
-    return_dict[rank] = (result, losses[-1])
-    
-    cleanup()
+    return result, losses[-1]
 
 
 class ADMM_AB:
