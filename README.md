@@ -30,7 +30,7 @@ Project
 Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN`` within our framework:
 
 ```python
-from .idl.implicit_base_model import ImplicitModel
+from idl import ImplicitBaseModel
 
 # Normal data processing
 train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
