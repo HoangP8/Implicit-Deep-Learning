@@ -65,7 +65,7 @@ class ADMMMultiGPUSolver:
         Y : np.ndarray,
         model_config : Dict[str, Any],
         plot_loss : Optional[bool] = False,
-    ):
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Solve State-driven Implicit Model using the ADMM consensus algorithm.
 

@@ -83,7 +83,7 @@ class CVXSolver:
         Z : np.ndarray, 
         Y : np.ndarray, 
         model_config : Dict[str, Any]
-    ):
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Solve State-driven Implicit Model using CVXPY.
 
