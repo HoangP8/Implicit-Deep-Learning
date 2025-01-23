@@ -1,10 +1,3 @@
-"""
-Main SIM class that handles defining and training a SIM model.
-TODO: 
-    - fix the config import, change function's arguments to remove the config input
-    - examples with lowrank and other solvers, etc.
-"""
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
