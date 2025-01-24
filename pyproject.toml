@@ -20,6 +20,7 @@ dependencies = [
     "matplotlib>=3.7.0",
     "mosek>=9.5.0",
     "tqdm>=4.66.0",
+    "sphinx>=7.0.0",
 ]
 
 authors = [
@@ -48,3 +49,9 @@ Documentation = ""
 Repository = "https://github.com/HoangP8/Implicit-Deep-Learning"
 Issues = "https://github.com/HoangP8/Implicit-Deep-Learning/issues"
 
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinxawesome-theme",
+]
