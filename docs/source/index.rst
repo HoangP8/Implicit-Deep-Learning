@@ -11,7 +11,7 @@ Welcome to IDL Documentation
    :caption: Contents:
 
    getting_started
-   api/models
+   api/idl
    api/sim
    api/attention
    examples
@@ -21,7 +21,7 @@ IDL (Implicit Deep Learning) is a Python package that implements implicit deep l
 Key Features
 -----------
 
-* Implicit Models with optional low-rank approximation
+* Implicit Modeling with optional low-rank training
 * State-driven Implicit Models (SIM)
 * Implicit Attention Mechanisms
 * Support for various datasets and architectures
