@@ -1,5 +1,8 @@
 import numpy as np
 import torch
+from .utils import set_seed
+
+set_seed(0)
 
 # Spiky region function
 def spiky_function(x, scale=5, freq=[2, 23, 78, 100]):
@@ -8,7 +11,6 @@ def spiky_function(x, scale=5, freq=[2, 23, 78, 100]):
 # Non-spiky region function with added noise
 def non_spiky_function(x, noise_mean=0, noise_std=0.25):
     return np.sin(x) + np.random.normal(noise_mean, noise_std, size=x.shape)
-
 
 level = 7
 total_data_points = 10000
@@ -26,14 +28,13 @@ for start_idx in spiky_regions:
     end_idx = start_idx + spiky_region_size
     x_spiky = x_values[start_idx:end_idx]
     y_values[start_idx:end_idx] = spiky_function(x_spiky, spiky_region_magnitude)
-    
+
 # Assign non-spiky regions
 mask = y_values == 0
-
 y_values[mask] = non_spiky_function(x_values[mask], noise_mean=0, noise_std=level*0.05)
 
+# Save and reload data
 np.savetxt(f'./data/spiky_data_{level}.csv', y_values, delimiter=',', fmt='%.17g')
-
 y_values = np.loadtxt(f'./data/spiky_data_{level}.csv', delimiter=',')
 
 
@@ -42,18 +43,15 @@ def load_data(stock, look_back):
     data = []
     
     # create all possible sequences of length look_back
-    # we will take data example 0 to 60 then 1 to 61 then 2 to 62 ------ window size 
     for index in range(len(data_raw) - look_back): 
         data.append(data_raw[index:index + look_back])
-    #print(data[0:3])
     data = np.array(data)
 
-    test_set_size = int(np.round(0.4*data.shape[0])) #30 percent for test
+    test_set_size = int(np.round(0.4*data.shape[0])) # 30% for test
     train_set_size = data.shape[0] - (test_set_size)
     
     x_train = data[:train_set_size,:-1,:]
     y_train = data[:train_set_size,-1,:]
-    
     x_test = data[train_set_size:,:-1]
     y_test = data[train_set_size:,-1,:]
 
