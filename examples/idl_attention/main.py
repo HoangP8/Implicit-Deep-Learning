@@ -1,6 +1,7 @@
 import argparse
 import os
 import datetime
+import torch
 from .data import load_data
 from .model import GPTLanguageModel
 from .utils import set_seed, generate_text
@@ -8,19 +9,19 @@ from .train import initialize_idl_heads, train_model
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Train, evaluate and generate text with GPT implicit models.")
+    parser = argparse.ArgumentParser(description="Train, evaluate and generate text with GPT implicit model")
     
     # device id and seed
     parser.add_argument("--device", type=int, default=0, help="Specify the device id (e.g., 0 for cuda:0)")
     parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
     
     # dataset and training configs
-    parser.add_argument("--dataset", type=str, required=True, help="Dataset")
+    parser.add_argument("--dataset", type=str, choices=['tinyshakespeare', 'tinystories', 'wikitext'], required=True, help="Dataset to use: 'tinyshakespeare' or 'tinystories' or 'wikitext'")
     parser.add_argument("--batch_size", type=int, default=64, help="Training batch size")
     parser.add_argument("--block_size", type=int, default=256, help="Size of data blocks")
     parser.add_argument("--max_iters", type=int, default=30000, help="Max training iterations")
     parser.add_argument("--eval_interval", type=int, default=500, help="Interval for evaluation")
-    parser.add_argument("--learning_rate", type=float, default=1e-4, help="Learning rate for optimizer")
+    parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate for optimizer")
     parser.add_argument("--eval_iters", type=int, default=200, help="Number of iterations for evaluation")
     parser.add_argument("--n_embd", type=int, default=384, help="Embedding size")
     parser.add_argument("--n_head", type=int, default=2, help="Number of attention heads")
@@ -32,7 +33,7 @@ def parse_args():
     parser.add_argument("--enforce_structure_IDL", action="store_true", help="Enforce structured IDL model")
     parser.add_argument("--attention_version", type=str, default="softmax", help="Attention mechanism version")
     parser.add_argument("--max_new_tokens", type=int, default=100, help="Max new tokens for generation")
-    parser.add_argument("--is_low_rank", action="store_true", help="Low-rank approach for implicit model")
+    parser.add_argument("--is_low_rank", type=bool, default=False, help="Low-rank approach for implicit model")
     parser.add_argument("--rank", type=int, default=1, help="Rank k of the low-rank approach")
     
     return parser.parse_args()
@@ -40,12 +41,12 @@ def parse_args():
 
 def main():
     """
-    Main function to initialize models, train, evaluate and generate text.
+    Main function to initialize and train a GPT-2 model with IDLHead.
     """
 
     args = parse_args()
     set_seed(args.seed)
-    device = f"cuda:{args.device}"
+    device = torch.device(f"cuda:{args.device}" if torch.cuda.is_available() else "cpu")
     
     # log file
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))

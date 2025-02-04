@@ -1,7 +1,6 @@
-import gc
 import logging
 import numpy as np
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, Tuple
 
 from ..utils import fixpoint_iteration
 

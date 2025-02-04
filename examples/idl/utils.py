@@ -1,6 +1,8 @@
 import torch
 import datetime
 import os
+import random
+import numpy as np
 
 def transpose(X):
     """
@@ -9,6 +11,16 @@ def transpose(X):
     assert len(X.size()) == 2, "data must be 2D"
     return X.T
 
+def set_seed(seed: int) -> None:
+    """
+    Set seed for reproducibility.
+    """
+    random.seed(seed) 
+    np.random.seed(seed) 
+    torch.manual_seed(seed) 
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
 def get_test_accuracy(model, loss_fn, test_loader, device):
     """
@@ -19,7 +31,7 @@ def get_test_accuracy(model, loss_fn, test_loader, device):
     correct_predictions = 0
     total_samples = 0
 
-    with torch.no_grad():  # Disable gradient 
+    with torch.no_grad(): 
         for inputs, targets in test_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             predictions = model(inputs)
@@ -61,16 +73,20 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs
 
     model.to(device)
 
+    # Prepare logging
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")    
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    log_file = os.path.join(log_dir, f"{timestamp}.log")
-    with open(log_file, 'w') as f:
-        f.write("Arguments:\n")
-        for arg, value in vars(args).items():
-            f.write(f"{arg}: {value}\n")
-        f.write("\n")
-        f.write("Epoch,Train Loss,Train Accuracy,Test Loss,Test Accuracy\n")
+    log_file_path = os.path.join(log_dir, f"{timestamp}.log")
+    log_file = open(log_file_path, 'w')
+    
+    log_file.write("Arguments:\n")
+    for arg, value in vars(args).items():
+        log_file.write(f"{arg}: {value}\n")
+    log_file.write("\n")
+    log_file.write(f'Model size: {sum(p.numel() for p in model.parameters())} parameters\n')
+    log_file.write("\n")
+    log_file.write("Epoch,Train Loss,Train Accuracy,Test Loss,Test Accuracy\n")
 
     # Training loop
     for epoch in range(num_epochs):
@@ -107,11 +123,11 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs
                       f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
                       f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%")
 
-                with open(log_file, 'a') as f:
-                    f.write(f"Epoch {epoch + 1}/{num_epochs} - "
-                            f"Batch {batch_idx + 1}/{total_batches}: "
-                            f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
-                            f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%\n")
+            
+                log_file.write(f"Epoch {epoch + 1}/{num_epochs} - "
+                        f"Batch {batch_idx + 1}/{total_batches}: "
+                        f"Train Loss: {loss.item():.4f}, Train Accuracy: {100 * correct_train / total_train:.2f}%, "
+                        f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy * 100:.2f}%\n")
 
             batch_idx += 1
 
@@ -122,13 +138,11 @@ def train(args, model, train_loader, test_loader, optimizer, loss_fn, num_epochs
         print(f"Epoch {epoch + 1}/{num_epochs}: "
               f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
               f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%")
-        with open(log_file, 'a') as f:
-            f.write(f"Epoch {epoch + 1}/{num_epochs}: "
-                    f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
-                    f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%\n")
+        log_file.write(f"Epoch {epoch + 1}/{num_epochs}: "
+                f"Train Loss: {avg_train_loss:.4f} | Train Accuracy: {train_accuracy:.2f}% | "
+                f"Test Loss: {test_loss:.4f} | Test Accuracy: {test_accuracy * 100:.2f}%\n")
 
-        with open(log_file, 'a') as f:
-            f.write("-" * 100 + "\n")
+        log_file.write("-" * 100 + "\n")
         print("-" * 100)
 
     return model, log_file
