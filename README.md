@@ -82,7 +82,7 @@ train_model(args, model, train_data, val_data, device, log_file)
 ```
 
 Note:
-- For `ImplicitModel`, `ImplicitRNN`, and `IDLHead`, more examples are provided in the `examples` folder. Each model comes with a `.sh` script for easy execution. This is an example for IDL. Adjust the script parameters as needed and run:
+- For `ImplicitModel`, `ImplicitRNN`, and `IDLHead`, more examples are provided in the `examples` folder. Each model comes with a `.sh` script for easy execution. This is an example for IDL, please adjust the script parameters as needed and run:
   ```
   bash examples/idl/idl.sh
   ```
