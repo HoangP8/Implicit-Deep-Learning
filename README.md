@@ -1,36 +1,77 @@
-# Implicit-Deep-Learning
-IM + SIM + Attention
+<div align="center">
+  <h1>Implicit Deep Learning Package</h1>
+</div>
 
-## Project Structure
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" height="20" style="border: none;">
+  </a>
+  <a href="https://pypi.org/project/torchcam/">
+    <img src="https://img.shields.io/pypi/v/torchcam.svg?logo=PyPI&logoColor=fff&style=flat-square&label=PyPI" alt="PyPi Version" style="border: none;">
+  </a>
+  <a href="https://colab.research.google.com/github/frgfm/notebooks/blob/main/torch-cam/quicktour.ipynb">
+    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Tutorial" style="border: none;">
+  </a>
+  <a href="https://frgfm.github.io/torch-cam">
+    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/torch-cam/page-build.yml?branch=main&label=Documentation&logo=read-the-docs&logoColor=white&style=flat-square" alt="Documentation" style="border: none;">
+  </a>
+</p>
 
-Below is the project's repository structure:
+<p align="center">
+  <a href="https://torchdeq.readthedocs.io/en/latest/get_started.html"><b>Introduction</b></a> 
+  • 
+  <a href="https://colab.research.google.com/drive/12HiUnde7qLadeZGGtt7FITnSnbUmJr-I?usp=sharing"><b>Installation</b></a> 
+  •
+  <a href="https://torchdeq.readthedocs.io/en/latest/deq-zoo/model.html"><b>Quick Tour</b></a>
+  •
+  <a href="TODO.md"><b>Contribution</b></a> 
+  • 
+  <a href="README.md#citation"><b>Citation</b></a>
+</p>
 
-```plaintext 
-Project
-├─ 📂examples                    
-│   ├─ 📂im 
-│   ├─ 📂im_rnn
-│   ├─ 📂im_attention
-│   └─ 📂sim
-│
-├─ 📂docs  
-│
-├─ 📂src
-│   └─ 📂idl
-│   │   ├─ 📃base_function.py
-│   │   ├─ 📃ImplicitModel.py
-│   │   ├─ 📃ImplicitRNN.py
-│   │   └─ 📂sim
-│   │   │   ├─ 📃base_function.py
-│   │   │   └─ 📃SIM.py
-└─ 📃LICENSE
-└─ 📃README.md
-└─ 📃pyproject.toml
-```
+
+## Introduction
+Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers conventionally. Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations:
+
+1. State equation:
+
+$$X = \phi (AX + BU),$$
+
+2. Prediction equation:
+
+$$\hat{Y}(U) = CX + DU,$$
+
+where $\phi: \mathbb{R}^{n\times m} \to \mathbb{R}^{n\times m}$ is a nonlinear activation that is strictly increasing and component-wise non-expansive, such as ReLU, tanh or sigmoid. Matrices $A\in \mathbb{R}^{n\times n}$, $B\in \mathbb{R}^{n\times p}$, $C\in \mathbb{R}^{q\times n}$ and $D\in \mathbb{R}^{q\times p}$ are model parameters.
+
+For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network: 
+![feedforward-implicit-illus](https://github.com/alicia-tsai/implicit-deep-learning/blob/main/figures/ff-illus.jpg)
+
+
+As opposed to the above network, the typical implicit model does not have a clear hierachical, layered structure:
+![feedforward-implicit-illus](https://github.com/alicia-tsaiL/implicit-deep-learning/blob/main/figures/im-illus.jpg)
+
+Journal article: https://epubs.siam.org/doi/abs/10.1137/20M1358517
+
+Press article: https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4
+
+## Installation
+- Install required packages by running:
+  ```
+  pip install -r requirements.txt
+  ```
+- Through `pip`:
+  ```
+  pip install idl
+  ```
+- From source:
+  ```
+  git clone https://github.com/HoangP8/Implicit-Deep-Learning && cd Implicit-Deep-Learning
+  pip install -e .
+  ```
 
 ## Interface
 
-Here’s a sample usage of the `ImplicitModel` or ``ImplicitRNN``:
+Example for `ImplicitModel` or ``ImplicitRNN``:
 
 ```python
 from idl import ImplicitModel
@@ -39,17 +80,20 @@ from idl import ImplicitModel
 train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
 
 # Define the Implicit Model
-model = ImplicitModel(hidden_dim=..., input_dim=..., output_dim=...,
-                      low_rank=T/F, rank=...,
-                      mitr=..., grad_mitr=..., tol=..., grad_tol=...,
-                      f=ImplicitFunctionInf)
+model = ImplicitModel(
+    hidden_dim=100,  # Size of the hidden dimension
+    input_dim=3072,  # Input dimension (e.g., 3*32*32 for CIFAR-10)
+    output_dim=10,   # Output dimension (e.g., 10 classes for CIFAR-10)
+)
 
 # Normal training loop
 optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
 loss_fn = ...    # Choose loss function (e.g., Cross-Entropy, MSE)
 
 for _ in range(epoch): 
-    optimizer.zero_grad() 
+    ...
+    optimizer.zero_grad()
+    loss = loss_fn(model(inputs), targets) 
     loss.backward()  
     optimizer.step()  
     ...
@@ -57,61 +101,45 @@ for _ in range(epoch):
 
 
 
-
-- By default, the parameters `mitr=grad_mitr=300`, and `tol=grad_tol=3e-6`.
-- The default value of `low_rank` is `False`, meaning the model is full rank by default. Users can easily switch to a low-rank version.
-- Users need to define `hidden_dim` for the implicit model. The `input_dim` represents the input dimension vector; similarly for `output_dim`.
-- The default function `f=ImplicitFunctionInf` is the wellposedness condition for the infinity norm of matrix A.
-- Example CIFAR-10, use `input_dim=3*32*32=3072` for the 32x32 RGB images and `output_dim=10` for 10 classes.
-- We want a low-rank Implicit model with `hidden_dim=100`:
-
-```python
-model = ImplicitModel(hidden_dim=100, input_dim=3072, output_dim=10, low_rank=True, rank=2)
-```
-- Indeed users can change any parameters they want, by setting the value of parameters.
-- Same approach for `ImplicitRNN` with time-series dataset.
-
-Here’s a sample usage of the `IDLHead`:
+Example for `IDLHead`:
 ```python
 from idl import IDLHead
 
 # Load data as normal
 train_data, val_data = load_data()
 
-# Define the Explicit Transformer Model
-model = GPTLanguageModel(vocab_size=..., n_embd=..., block_size=...,
-                      n_layer=..., n_head=..., dropout=...)
+# Define the Transformer Model (e.g., GPT)
+model = GPTLanguageModel(
+    vocab_size=...,  # Vocabulary size
+    n_embd=...,      # Embedding dimension
+    block_size=...,  # Context length
+    n_layer=...,     # Number of layers
+    n_head=...,      # Number of attention heads
+    dropout=...      # Dropout rate
+)
 
-# Initialize IDL attention heads in the model.
+# Replace standard attention heads with IDL attention heads
 for i in range(n_layer):
     model.blocks[i].sa.heads = nn.ModuleList([
-        IDLHead(n_embd // n_head, n_embd, block_size, fixed_point_iter, 
-                attention_version, is_low_rank, rank) 
+        IDLHead(
+            n_embd // n_head,  # Dimension per head
+            n_embd,            # Embedding dimension
+            block_size,        # Context length
+        ) 
         for _ in range(args.n_head)
     ])
 
-# Normal model training
+# Normal GPT-model training
 train_model(args, model, train_data, val_data, device, log_file)
 ```
 
-## TODO
+Note:
+- For `ImplicitModel`, `ImplicitRNN`, and `IDLHead`, more examples are provided in the `examples` folder. Each model comes with a `.sh` script for easy execution. This is an example for IDL, please adjust the script parameters as needed and run:
+  ```
+  bash examples/idl/idl.sh
+  ```
+- For a full list of hyperparameters and detailed usage, refer to the [`documentation`](https://www.youtube.com/).
 
-- [x] Code SIM core functions.
-- [x] Code Implicit core functions.
-   - [x] Implicit model + LoRa
-   - [x] Implicit RNN model + LoRa
-- [x] Code examples for `im` and `im_rnn` 
-   - [x] Refactor Time-series data processing + training
-   - [x] Test Inference + Debug   
-- [x] Refactor `im_attention` example
-   - [x] Flexibility in base self-attention and Lipschitz version
-   - [x] Refactor the functions effectively
-   - [ ] Users can use easily
-- [ ] Refactor `sim` example
-   - [ ] Get different solvers
-   - [ ] Different experiments
-- [x] Docstring (Important)
-   - [x] Implicit (ver1)
-   - [ ] SIM 
-- [ ] Debug, check, and test (1 week)
+## Contribution
 
+## Citation
