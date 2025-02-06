@@ -34,14 +34,17 @@
 Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers.
 
 Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and m is the batch size, an implicit model consists of an equilibrium equation in a "state matrix" $X \in \mathbb{R}^{n\times m}$:
+
 $$X = \phi (AX + BU),$$
+
 and a prediction equation:
-$\hat{Y}(U) = CX + DU,$
+
+$$\hat{Y}(U) = CX + DU,$$
 
 where $\phi: \mathbb{R}^{n\times m} \to \mathbb{R}^{n\times m}$ is a nonlinear activation that is strictly increasing and component-wise non-expansive, such as ReLU, tanh or sigmoid. Matrices $A\in \mathbb{R}^{n\times n}$, $B\in \mathbb{R}^{n\times p}$, $C\in \mathbb{R}^{q\times n}$ and $D\in \mathbb{R}^{q\times p}$ are model parameters.
 
 For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network: 
-![feedforward-implicit-illus](https://github.com/alicia-tsai/implicit-deep-learning/blob/main/figures/ff-illus.jpg)
+![feedforward-implicit-illus](https://github.com/alicia-tsai/implicit-deep-learning/blob/main/figures/ff-illus.jpg){:width="80%"}
 
 As opposed to the above network, the typical implicit model does not have a clear hierachical, layered structure:
 ![feedforward-implicit-illus](https://github.com/alicia-tsaiL/implicit-deep-learning/blob/main/figures/im-illus.jpg)
