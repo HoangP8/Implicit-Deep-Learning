@@ -36,6 +36,7 @@ Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equatio
 Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations:
 
 1. State equation:
+
 $$X = \phi (AX + BU),$$
 
 2. Prediction equation:
