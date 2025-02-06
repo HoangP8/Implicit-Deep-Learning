@@ -43,12 +43,15 @@ $$\hat{Y}(U) = CX + DU,$$
 
 where $\phi: \mathbb{R}^{n\times m} \to \mathbb{R}^{n\times m}$ is a nonlinear activation that is strictly increasing and component-wise non-expansive, such as ReLU, tanh or sigmoid. Matrices $A\in \mathbb{R}^{n\times n}$, $B\in \mathbb{R}^{n\times p}$, $C\in \mathbb{R}^{q\times n}$ and $D\in \mathbb{R}^{q\times p}$ are model parameters.
 
-For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network: 
-![feedforward-implicit-illus](https://github.com/alicia-tsai/implicit-deep-learning/blob/main/figures/ff-illus.jpg)
+For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network.
+<p align="center">
+  <img src="figures/ff-illus.jpg" alt="2-layer feedforward" width="80%"><br>
+</p>
 
-
-As opposed to the above network, the typical implicit model does not have a clear hierachical, layered structure:
-![feedforward-implicit-illus](https://github.com/alicia-tsaiL/implicit-deep-learning/blob/main/figures/im-illus.jpg)
+As opposed to the above figure, the typical implicit model does not have a clear hierarchical, layered structure.
+<p align="center">
+  <img src="figures/im-illus.jpg" alt="typical implicit model" width="80%"><br>
+</p>
 
 Journal article: https://epubs.siam.org/doi/abs/10.1137/20M1358517
 
