@@ -31,20 +31,22 @@
 
 
 ## Introduction
-Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers.
+Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers conventionally.
 
-Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and m is the batch size, an implicit model consists of an equilibrium equation in a "state matrix" $X \in \mathbb{R}^{n\times m}$:
+Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations:
 
+1. State equation:
 $$X = \phi (AX + BU),$$
 
-and a prediction equation:
+2. Prediction equation:
 
 $$\hat{Y}(U) = CX + DU,$$
 
 where $\phi: \mathbb{R}^{n\times m} \to \mathbb{R}^{n\times m}$ is a nonlinear activation that is strictly increasing and component-wise non-expansive, such as ReLU, tanh or sigmoid. Matrices $A\in \mathbb{R}^{n\times n}$, $B\in \mathbb{R}^{n\times p}$, $C\in \mathbb{R}^{q\times n}$ and $D\in \mathbb{R}^{q\times p}$ are model parameters.
 
 For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network: 
-![feedforward-implicit-illus](https://github.com/alicia-tsai/implicit-deep-learning/blob/main/figures/ff-illus.jpg){:width="80%"}
+![feedforward-implicit-illus](https://github.com/alicia-tsai/implicit-deep-learning/blob/main/figures/ff-illus.jpg)
+
 
 As opposed to the above network, the typical implicit model does not have a clear hierachical, layered structure:
 ![feedforward-implicit-illus](https://github.com/alicia-tsaiL/implicit-deep-learning/blob/main/figures/im-illus.jpg)
