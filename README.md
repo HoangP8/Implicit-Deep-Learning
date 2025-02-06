@@ -18,15 +18,15 @@
 </p>
 
 <p align="center">
-  <a href="https://torchdeq.readthedocs.io/en/latest/get_started.html"><b>Introduction</b></a> 
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#introduction"><b>Introduction</b></a> 
   • 
-  <a href="https://colab.research.google.com/drive/12HiUnde7qLadeZGGtt7FITnSnbUmJr-I?usp=sharing"><b>Installation</b></a> 
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#installation"><b>Installation</b></a> 
   •
   <a href="https://torchdeq.readthedocs.io/en/latest/deq-zoo/model.html"><b>Quick Tour</b></a>
   •
-  <a href="TODO.md"><b>Contribution</b></a> 
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#contribution"><b>Contribution</b></a> 
   • 
-  <a href="README.md#citation"><b>Citation</b></a>
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#contribution"><b>Citation</b></a>
 </p>
 
 
@@ -53,9 +53,9 @@ As opposed to the above figure, the typical implicit model does not have a clear
   <img src="figures/im-illus.jpg" alt="typical implicit model" width="80%"><br>
 </p>
 
-Journal article: https://epubs.siam.org/doi/abs/10.1137/20M1358517
 
-Press article: https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4
+To dive deeper into the motivation behind Implicit Models, check out this beginner-friendly article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). If you're curious about the math and technical details, the full framework is explained in [this journal article](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
+
 
 ## Installation
 - Install required packages by running:
@@ -72,9 +72,13 @@ Press article: https://medium.com/analytics-vidhya/what-is-implicit-deep-learnin
   pip install -e .
   ```
 
-## Interface
+## Quick tour
+The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes four models: `ImplicitModel`, `ImplicitRNN`, `IDLHead`, and `SIM`. For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link).
 
-Example for `ImplicitModel` or ``ImplicitRNN``:
+### Example: `ImplicitModel`
+
+Here’s how to use `ImplicitModel`, the most basic form of an implicit model:
+
 
 ```python
 from idl import ImplicitModel
@@ -102,9 +106,13 @@ for _ in range(epoch):
     ...
 ```
 
+For `ImplicitRNN`, the interface is similar with `ImplicitModel`.
 
 
-Example for `IDLHead`:
+### Example: `IDLHead`
+For `IDLHead`, you can replace standard attention heads in a Transformer model (e.g., GPT) with implicit attention heads. Here’s an example:
+
+
 ```python
 from idl import IDLHead
 
@@ -136,13 +144,35 @@ for i in range(n_layer):
 train_model(args, model, train_data, val_data, device, log_file)
 ```
 
-Note:
-- For `ImplicitModel`, `ImplicitRNN`, and `IDLHead`, more examples are provided in the `examples` folder. Each model comes with a `.sh` script for easy execution. This is an example for IDL, please adjust the script parameters as needed and run:
+To get familiar with the framework, start with the [Notebook tutorial](link). We also included a folder `example` in the repository, which contains subfolders for each model. Each subfolder includes a script for easy experimentation. For example, to run the IDL example, adjust the parameters in the script and execute:
+
   ```
   bash examples/idl/idl.sh
   ```
-- For a full list of hyperparameters and detailed usage, refer to the [`documentation`](https://www.youtube.com/).
+
 
 ## Contribution
 
 ## Citation
+
+```
+@article{ghaoui2021implicitdl,
+title={Implicit deep learning},
+author={El Ghaoui, Laurent and Gu, Fangda and Travacca, Bertrand and Askari, Armin and Tsai, Alicia},
+journal={SIAM Journal on Mathematics of Data Science},
+volume={3},
+number={3},
+pages={930--958},
+year={2021},
+publisher={SIAM}
+}
+
+```
+
+```
+@article{tsai2022state,
+  title={State-driven implicit modeling for sparsity and robustness in neural networks},
+  author={Tsai, Alicia Y and Decugis, Juliette and Ghaoui, Laurent El and Atamt{\"u}rk, Alper},
+  journal={arXiv preprint arXiv:2209.09389},
+  year={2022}
+```
