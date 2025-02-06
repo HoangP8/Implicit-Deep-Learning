@@ -31,14 +31,14 @@
 
 
 ## Introduction
-Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers.
+Implicit Deep Learning (IDL) finds a hidden state \(X\) by solving a fixed-point equation instead of explicitly stacking layers.
 
-$$
+\[
 X = \phi(AX + BU), 
 \quad 
 \hat{Y} = CX + DU,
-$$
-where $A, B, C, D$ are learnable parameters, $\phi$ is an activation (e.g., ReLU), $U$ is the input, $X$ is the hidden state, and $\hat{Y}$ is the output.
+\]
+where \(A, B, C, D\) are learnable parameters, \(\phi\) is an activation (e.g., ReLU), \(U\) is the input, \(X\) is the hidden state, and \(\hat{Y}\) is the output.
 
 
 ## Installation
