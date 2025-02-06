@@ -106,7 +106,7 @@ for _ in range(epoch):
     ...
 ```
 
-For `ImplicitRNN`, the interface is similar with `ImplicitModel`.
+For `ImplicitRNN`, the interface is similar to `ImplicitModel`.
 
 
 ### Example: `IDLHead`
@@ -156,15 +156,15 @@ To get familiar with the framework, start with the [Notebook tutorial](link). We
 ## Citation
 
 ```
-@article{ghaoui2021implicitdl,
-title={Implicit deep learning},
-author={El Ghaoui, Laurent and Gu, Fangda and Travacca, Bertrand and Askari, Armin and Tsai, Alicia},
-journal={SIAM Journal on Mathematics of Data Science},
-volume={3},
-number={3},
-pages={930--958},
-year={2021},
-publisher={SIAM}
+@article{el2021implicit,
+  title={Implicit deep learning},
+  author={El Ghaoui, Laurent and Gu, Fangda and Travacca, Bertrand and Askari, Armin and Tsai, Alicia},
+  journal={SIAM Journal on Mathematics of Data Science},
+  volume={3},
+  number={3},
+  pages={930--958},
+  year={2021},
+  publisher={SIAM}
 }
 
 ```
@@ -175,4 +175,5 @@ publisher={SIAM}
   author={Tsai, Alicia Y and Decugis, Juliette and Ghaoui, Laurent El and Atamt{\"u}rk, Alper},
   journal={arXiv preprint arXiv:2209.09389},
   year={2022}
+}
 ```
