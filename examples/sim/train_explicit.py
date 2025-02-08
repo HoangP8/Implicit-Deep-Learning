@@ -1,148 +1,137 @@
-import logging
-import sys
-import time
-from pathlib import Path
+"""
 
-import hydra
+This file contains a simple example code for training an explicit network, which is later used to generate states to train the Implicit Model.
+
+"""
+
+import os
+import logging
+from tqdm import tqdm
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from omegaconf import DictConfig, OmegaConf
 import torch.optim.lr_scheduler as lr_scheduler
+from torch.utils.data import DataLoader
+from torchvision import transforms, datasets
 
-import sys
-import os
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
-from sim import utils
-from sim import models
-import torchvision.models as vision_models
+from explicit_networks import FashionMNIST_FFNN
 
 logger = logging.getLogger(__name__)
 
-OmegaConf.register_new_resolver("eval", eval, use_cache=True)
-OmegaConf.register_new_resolver(
-    "generate_random_seed", utils.seeding.generate_random_seed, use_cache=True
-)
+def load_data(data_dir="data", batch_size=128, num_workers=4):
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    train_set = datasets.FashionMNIST(
+        f"{data_dir}/FashionMNIST",
+        train=True,
+        download=True,
+        transform=transform,
+    )
+    test_set = datasets.FashionMNIST(
+        f"{data_dir}/FashionMNIST",
+        train=False,
+        download=True,
+        transform=transform,
+    )
+
+    train_loader = DataLoader(
+        train_set,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+    )
+    test_loader = DataLoader(
+        test_set,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+    )
+    return train_loader, test_loader
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="train_explicit")
-def main(config: DictConfig) -> None:
-    utils.config.initialize_config(config)
+def train(model, train_loader, loss_fn, optimizer, epoch, device):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = loss_fn(output, target)
+        loss.backward()
+        optimizer.step()
+        if batch_idx % 100 == 0:
+            loss = loss.item()
+            logger.info(
+                "Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}".format(
+                    epoch,
+                    batch_idx * len(data),
+                    len(train_loader.dataset),
+                    100.0 * batch_idx / len(train_loader),
+                    loss / len(data),
+                )
+            )
 
-    logger.info(f"Working directory: {Path.cwd()}")
-    logger.info(f"Running with config: \n{OmegaConf.to_yaml(config, resolve=True)}")
+def test(model, test_loader, loss_fn, epoch, device):
+    model.eval()
+    test_loss = torch.tensor(0.0, device=device)
+    correct = torch.tensor(0.0, device=device)
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += loss_fn(output, target)
+            _, preds = torch.max(output, 1)
+            correct += torch.sum(preds == target.data).item()
 
-    # Record total runtime.
-    total_runtime = time.time()
+    test_loss = (test_loss / len(test_loader.dataset)).item()
+    correct = correct.item()
 
-    utils.seeding.seed_everything(config)
-
-    if config.model == "ffnn":
-        model = models.explicit.ffnn.FashionMNIST_FFNN(28 * 28, 10)
-    elif config.model == "ResNet18":
-        # model = vision_models.resnet18(pretrained=True)
-        # model.avgpool = nn.AdaptiveAvgPool2d(1)
-        # num_ftrs = model.fc.in_features
-        # model.fc = nn.Linear(num_ftrs, 200)
-        model = models.explicit.cnn.resnet18()
-    elif config.model == "ResNet10":
-        model = models.explicit.cnn.resnet10()
-    elif config.model == "MobileNetv3":
-        model = vision_models.mobilenet_v3_small(weights="IMAGENET1K_V1")
-        if config.dataset == "TinyImageNet":
-            model.classifier[3] = nn.Linear(model.classifier[3].in_features, 200)
-        elif config.dataset == "CIFAR10":
-            model.classifier[3] = nn.Linear(model.classifier[3].in_features, 10)
-    elif config.model == "MobileNetv2":
-        model = vision_models.mobilenet_v2(weights="IMAGENET1K_V1")
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, 200)
-    elif config.model == "EfficientNetB0":
-        model = vision_models.efficientnet_b0(weights="IMAGENET1K_V1")
-        model.classifier[1] = nn.Linear(model.classifier[1].in_features, 200)
-    elif config.model == "MLPMixer":
-        model = models.explicit.mixer.MLPMixer(
-            img_size=28,
-            patch_size=7,
-            hidden_dim=32,
-            token_dim=16,
-            channel_dim=64,
-            num_layers=2,
-            num_classes=10,
+    logger.info(
+        "Test Epoch: {} Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n".format(
+            epoch,
+            test_loss,
+            correct,
+            len(test_loader.dataset),
+            100.0 * correct / len(test_loader.dataset),
         )
-        # model = models.explicit.mixer.MLPMixer(
-        #     in_channels=3,
-        #     img_size=32,
-        #     hidden_size=64,
-        #     patch_size = 4,
-        #     hidden_c = 512,
-        #     hidden_s = 64,
-        #     num_layers = 4,
-        #     num_classes=10,
-        #     drop_p=0.
-        # )
-    elif config.model == "SimCLR":
-        # Prepare model
-        # pre_model = models.explicit.cnn.SimCLR(models.explicit.cnn.resnet10().to(config.device), projection_dim=128).to(config.device)
-        pre_model = models.explicit.cnn.SimCLR(
-            vision_models.resnet18(pretrained=False).to(config.device), 
-            projection_dim=128
-        ).to(config.device)
-        pre_model.load_state_dict(torch.load(config.backbone_ckpt))
-        logger.info(f"Loaded pretrained feature extractor from {config.backbone_ckpt}")
-        model = models.explicit.cnn.LinModel(pre_model.enc, feature_dim=pre_model.feature_dim, n_classes=10)
-    elif config.model == "SimpleCNN":
-        model = models.explicit.cnn.SimpleCNN()
-    elif config.model == "SigmoidCNN":
-        model = models.explicit.cnn.SigmoidCNN()
-    else:
-        raise NotImplementedError()
-    # model = models.explicit.vit.ViT(img_size=28, patch_size=7, emb_size=32, num_heads=1, num_layers=1, num_classes=10).to(config.device)
+    )
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--batch_size", type=int, default=128)
+    parser.add_argument("--epochs", type=int, default=100)
+    parser.add_argument("--data_dir", type=str, default="data")
+    parser.add_argument("--learning_rate", type=float, default=0.01)
+    parser.add_argument("--output_dir", type=str, default="models")
+    args = parser.parse_args()
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    model = FashionMNIST_FFNN(28 * 28, 10)
     
-    model = model.to(config.device)
+    model = model.to(device)
 
     num_params = sum(p.numel() for p in model.parameters())
     logger.info(f"Number of parameters: {num_params}")
 
-    train_loader, test_loader = utils.load_data.load_dataloader(config)
+    train_loader, test_loader = load_data(data_dir=args.data_dir, batch_size=args.batch_size)
 
-    if config.train.label_smoothing != 0.0:
-        loss_fn = nn.CrossEntropyLoss(reduction="sum", label_smoothing=config.train.label_smoothing)
-    else:
-        loss_fn = nn.CrossEntropyLoss(reduction="sum")
+    loss_fn = nn.CrossEntropyLoss(reduction="sum")
 
-    if config.model=="SimCLR":
-        train_params = [param for param in model.lin.parameters()]
-    else:
-        train_params = [param for param in model.parameters()]
+    train_params = [param for param in model.parameters()]
     logger.info(f"Number of trainable parameters: {sum(p.numel() for p in train_params)}")
 
-    # optimizer = optim.Adadelta(model.parameters(), lr=config.train.lr)
-    if config.train.optimizer == "adam":
-        optimizer = optim.Adam(train_params, lr=config.train.lr, betas=(0.9, 0.99), weight_decay=config.train.weight_decay)
-    elif config.train.optimizer == "sgd":
-        optimizer = optim.SGD(train_params, lr=config.train.lr, momentum=config.train.momentum, weight_decay=config.train.weight_decay)
+    optimizer = optim.SGD(train_params, lr=args.learning_rate, momentum=0.9, weight_decay=0.0001)
 
-    # scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=config.train.lr_decay_per_epoch)
-    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.train.num_epochs, eta_min=config.train.min_lr)
+    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=0.0001)
 
-    models.explicit.utils.test(config, model, test_loader, loss_fn, 0)
-    for epoch in range(1, config.train.num_epochs + 1):
-        models.explicit.utils.train(
-            config, model, train_loader, loss_fn, optimizer, epoch
-        )
-        models.explicit.utils.test(config, model, test_loader, loss_fn, epoch)
+    for epoch in tqdm(range(args.epochs)):
+        train(model, train_loader, loss_fn, optimizer, epoch, device)
+        test(model, test_loader, loss_fn, epoch, device)
         scheduler.step()
 
-    if config.save_model:
-        torch.save(model.state_dict(), f"{config.model}_{config.dataset}.pt")
-        print(f"Model successfully saved")
-
-    # Record total runtime.
-    total_runtime = time.time() - total_runtime
-    # wandb.log({"total_runtime": total_runtime})
-
-
-if __name__ == "__main__":
-    main()
+    torch.save(model.state_dict(), f"{args.output_dir}/explicit_model.pt")

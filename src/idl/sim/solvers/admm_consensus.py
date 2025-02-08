@@ -138,7 +138,7 @@ class ADMMSolver:
             lambda_yz = self.lambda_z
 
         if is_y:
-            admm = ADMM_CD(X.shape[1], Y.shape[1], rho, lambda_yz, kappa, device=device)
+            admm = ADMM_CD(X.shape[1], Y.shape[1], rho, lambda_yz, device=device)
         else:
             admm = ADMM_AB(X.shape[1], Y.shape[1], n, rho, lambda_yz, kappa, device=device)
 
@@ -266,7 +266,7 @@ class ADMM_AB:
             # assert np.isclose(np.abs(a).sum(), v)
             A_np[idx, :] = a
 
-        proj = torch.tensor(A_np, dtype=self.X.dtype, device=self.device)
+        proj = torch.tensor(A_np, dtype=self.avg.dtype, device=self.device)
 
         return proj
 

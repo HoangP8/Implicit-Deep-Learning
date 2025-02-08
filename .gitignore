@@ -1,3 +1,7 @@
+examples/sim/models/
+examples/sim/data/
+data/
+
 __pycache__/
 *.py[cod]
 *$py.class

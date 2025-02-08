@@ -7,7 +7,6 @@ from contextlib import contextmanager
 import logging
 from typing import Callable, Dict, List, Optional, Union
 
-# from .solvers import solve
 from .utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
@@ -202,9 +201,9 @@ class SIM():
         return Y
     
     def get_states(
-            self, 
-            model : torch.nn.Module, 
-            inputs : torch.Tensor,
+        self, 
+        model : torch.nn.Module, 
+        dataloader : torch.utils.data.DataLoader,
     ) -> Dict[str, np.ndarray]:
         """
         Extract the states data (pre-activations, post-activations, inputs, outputs) from the explicit model.
@@ -212,7 +211,7 @@ class SIM():
 
         Args:
             model (torch.nn.Module): Explicit model (teacher) to extract state data.
-            inputs (torch.Tensor): Input data with shape (batch_size, input_dim).
+            dataloader (torch.utils.data.DataLoader): Data loader.
         
         Returns:
             states_data (dict): Dictionary containing the states data:
@@ -232,7 +231,7 @@ class SIM():
         pre_activations_accumulated = []
         post_activations_accumulated = []
 
-        for input_samples in inputs:
+        for input_samples, _ in dataloader:
             input_samples = input_samples.to(self.device)
 
             # Run the model with hooks and no gradient calculations
@@ -342,28 +341,26 @@ class SIM():
     
     def evaluate(
         self,
-        inputs : torch.Tensor,
-        labels : torch.Tensor,
+        dataloader : torch.utils.data.DataLoader,
     ) -> float:
         """
         Evaluate the SIM model on the given test data.
 
         Args:
-            inputs (torch.Tensor): Input data with shape (batch_size, input_dim).
-            labels (torch.Tensor): Labels for the input data with shape (batch_size,).
+            dataloader (torch.utils.data.DataLoader): Test data loader.
         
         Returns:
             test_accuracy (float): Accuracy of the SIM model on the given test data.
         """
-        U_test = inputs.flatten(1).T
+        U_test = dataloader.dataset.data.flatten(1).T
 
         if self.standardize:
-            U_test = self.scaler.transform(U_test.T).T # TODO: why transform instead of fit_transform?
+            U_test = self.scaler.transform(U_test.T).T 
 
-        X_test = fixpoint_iteration(self.weights['A'], self.weights['B'], U_test, self.device).cpu().numpy()
-        Y_test_pred = self.weights['C'] @ X_test + self.weights['D'] @ U_test
+        X_test = fixpoint_iteration(self.weights['A'], self.weights['B'], U_test, self.activation_fn, self.device).cpu().numpy()
+        Y_test_pred = self.weights['C'] @ X_test + self.weights['D'] @ U_test.cpu().numpy()
         test_accuracy = np.mean(
-            np.argmax(Y_test_pred, axis=0) == labels.numpy()
+            np.argmax(Y_test_pred, axis=0) == dataloader.dataset.targets.numpy()
         )
 
         return test_accuracy
