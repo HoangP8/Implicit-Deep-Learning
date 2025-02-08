@@ -9,6 +9,7 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from typing import List, Tuple, Union, Optional, Any, Dict
 
 from ..utils import fixpoint_iteration
 

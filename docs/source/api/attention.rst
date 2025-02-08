@@ -2,9 +2,9 @@ Implicit Attention Mechanisms
 =============================
 
 IDL Head
--------
+--------
 
-.. automodule:: idl.attention.implicit_head
+.. autoclass:: idl.attention.implicit_head.IDLHead
    :members:
    :undoc-members:
    :show-inheritance:

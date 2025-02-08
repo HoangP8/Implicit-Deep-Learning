@@ -26,8 +26,14 @@ Key Features
 * Implicit Attention Mechanisms
 * Support for various datasets and architectures
 
-Quick Install
-------------
+
+Getting Started
+==============
+
+Installation
+-----------
+
+Install using pip:
 
 .. code-block:: bash
 
@@ -40,3 +46,24 @@ Install from source:
    git clone https://github.com/HoangP8/Implicit-Deep-Learning
    cd Implicit-Deep-Learning
    pip install -e .
+
+Basic Usage
+----------
+
+Here's a simple example using ImplicitModel:
+
+.. code-block:: python
+
+   from idl import ImplicitModel
+   import torch
+
+   # Create model
+   model = ImplicitModel(
+       hidden_dim=100,
+       input_dim=784,
+       output_dim=10
+   )
+
+   # Forward pass
+   x = torch.randn(32, 784)  # batch_size=32, input_dim=784
+   output = model(x)

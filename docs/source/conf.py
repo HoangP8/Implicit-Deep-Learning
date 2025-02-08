@@ -28,11 +28,9 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 html_theme = 'sphinxawesome_theme'
-html_static_path = ['_static']
 
-# Awesome theme settings
+# Theme options
 html_theme_options = {
-    'navigation_depth': 4,
     'show_prev_next': True,
     'repository_url': 'https://github.com/HoangP8/Implicit-Deep-Learning',
     'use_repository_button': True,

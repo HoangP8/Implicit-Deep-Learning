@@ -4,7 +4,7 @@ Implicit Models
 Base Models
 ----------
 
-.. automodule:: idl.implicit_base_model
+.. autoclass:: idl.implicit_base_model.ImplicitModel
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +12,7 @@ Base Models
 RNN Models
 ----------
 
-.. automodule:: idl.implicit_rnn_model
+.. autoclass:: idl.implicit_rnn_model.ImplicitRNN
    :members:
    :undoc-members:
    :show-inheritance:

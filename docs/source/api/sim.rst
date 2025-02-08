@@ -1,7 +1,7 @@
 SIM (State-driven Implicit Models)
-================================
+==================================
 
-.. automodule:: idl.sim.sim
+.. autoclass:: idl.sim.sim.SIM
    :members:
    :undoc-members:
    :show-inheritance:
@@ -9,7 +9,7 @@ SIM (State-driven Implicit Models)
 Solvers
 -------
 
-.. automodule:: idl.sim.solvers
+.. autoclass:: idl.sim.solvers.admm_consensus_multigpu.ADMMMultiGPUSolver
    :members:
    :undoc-members:
    :show-inheritance:
