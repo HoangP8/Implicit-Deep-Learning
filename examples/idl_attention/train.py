@@ -3,11 +3,9 @@ import time
 import torch
 from torch import nn, Tensor
 import os
-import sys
 from typing import Any, Dict, Optional
 from .utils import estimate_loss, get_batch
-sys.path.append('../implicit')
-from idl.attention import IDLHead
+from idl import IDLHead
 
 
 def initialize_idl_heads(args: Any, idl_model: nn.Module) -> None:
@@ -48,7 +46,7 @@ def train_model(
 
     Args:
         args (Any): Configurations from main.py containing attributes such as 'max_iters',
-                    'learning_rate', 'block_size', 'batch_size', 'eval_interval', 'eval_iters',
+                    'lr', 'block_size', 'batch_size', 'eval_interval', 'eval_iters',
                     and 'dataset'.
         model (nn.Module): The model to train.
         data (Dict[str, Tensor]): Dictionary containing training and validation datasets with keys 'train' and 'val'.
@@ -68,7 +66,7 @@ def train_model(
     os.makedirs(checkpoints_dir, exist_ok=True)
 
     start_time = time.time()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     print(f"Training Implicit GPT model")
     with open(log_file, 'a') as f:
         f.write(f"Training Implicit GPT model\n")
