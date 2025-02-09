@@ -48,3 +48,6 @@ intersphinx_mapping = {
     'torch': ('https://pytorch.org/docs/stable', None),
     'numpy': ('https://numpy.org/doc/stable', None),
 }
+
+pygments_style = "sphinx" 
+

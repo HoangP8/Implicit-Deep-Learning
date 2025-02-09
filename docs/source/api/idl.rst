@@ -1,8 +1,8 @@
 Implicit Models
-==============
+===============
 
 Base Models
-----------
+-----------
 
 .. autoclass:: idl.implicit_base_model.ImplicitModel
    :members:

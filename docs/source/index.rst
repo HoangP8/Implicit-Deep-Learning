@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to IDL Documentation
-===========================
+============================
 
 .. toctree::
    :maxdepth: 2
@@ -19,7 +19,7 @@ Welcome to IDL Documentation
 IDL (Implicit Deep Learning) is a Python package that implements implicit deep learning models (with specialized attention mechanisms) and state-driven implicit models.
 
 Key Features
------------
+------------
 
 * Implicit Modeling with optional low-rank training
 * State-driven Implicit Models (SIM)
@@ -28,10 +28,10 @@ Key Features
 
 
 Getting Started
-==============
+===============
 
 Installation
------------
+------------
 
 Install using pip:
 
@@ -48,7 +48,7 @@ Install from source:
    pip install -e .
 
 Basic Usage
-----------
+-----------
 
 Here's a simple example using ImplicitModel:
 
