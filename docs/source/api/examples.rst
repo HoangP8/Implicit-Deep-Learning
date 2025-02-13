@@ -2,7 +2,7 @@ Examples
 ========
 
 MNIST Classification
-------------------
+--------------------
 
 .. code-block:: python
 

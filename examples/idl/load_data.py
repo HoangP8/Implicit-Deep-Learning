@@ -12,7 +12,7 @@ def load_data(args):
             ])
         train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
         test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-
+        
     # CIFAR-10 Dataset
     elif args.dataset == 'cifar10':
         transform = transforms.Compose([
@@ -27,7 +27,7 @@ def load_data(args):
         raise ValueError(f"Unsupported dataset: {args.dataset}")
     
     # Create DataLoaders
-    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
     
     return train_loader, test_loader

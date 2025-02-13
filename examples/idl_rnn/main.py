@@ -50,19 +50,19 @@ def main():
     
     # Initialize the Implicit RNN model
     model = ImplicitRNN(
-        hidden_dim=args.hidden_dim,
         input_dim=args.input_dim,
         output_dim=args.output_dim,
         implicit_hidden_dim=args.implicit_hidden_dim,
+        hidden_dim=args.hidden_dim,
+        is_low_rank=args.is_low_rank,
+        rank=args.rank,
         mitr=args.mitr,
         grad_mitr=args.grad_mitr,
         tol=args.tol,
         grad_tol=args.grad_tol,
-        v=args.v,
-        is_low_rank=args.is_low_rank,
-        rank=args.rank,
-    )
-    
+        v=args.v
+        )
+
     print(f'Model size: {sum(p.numel() for p in model.parameters())} parameters')
     
     # Define loss function, optimizer, device and log directory

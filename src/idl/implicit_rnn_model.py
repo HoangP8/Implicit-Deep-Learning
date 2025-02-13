@@ -61,26 +61,65 @@ class ImplicitRNNCell(nn.Module):
     
 
 class ImplicitRNN(nn.Module):
-    """
-    Implicit RNN for sequence processing.
+    r""" 
+    Implicit Recurrent Neural Network (ImplicitRNN) for sequence modeling.
 
-    Utilizes ImplicitRNNCell to handle sequences and a linear layer to project the final
-    hidden state to the desired output dimension.
+    Given the following dimensions:
+        - :math:`p`: number of input features,
+        - :math:`q`: number of output features,
+        - :math:`n`: number of hidden features,
+        - :math:`m`: batch size (number of samples per batch),
+        - :math:`T`: sequence length,
 
+    the implicit hidden state :math:`X_t \in \mathbb{R}^{m \times n}` and the RNN hidden state :math:`H_t \in \mathbb{R}^{m \times n}`
+    are computed by solving the following equations:
+
+    .. math::
+        \begin{aligned}
+            X_t &= \phi(A X_t + B [U_t, H_{t-1}]) \quad &\text{(Equilibrium equation)}, \\
+            H_t &= C X_t + D U_t \quad &\text{(Hidden state update)}.
+        \end{aligned}
+
+    The final hidden state :math:`H_T` is projected to the output:
+
+    .. math::
+        \hat{Y} = \text{Linear}(H_T),
+    
+    where:
+        - :math:`A \in \mathbb{R}^{n \times n}, B \in \mathbb{R}^{n \times (p+n)}, C \in \mathbb{R}^{n \times n}, D \in \mathbb{R}^{n \times p}` are learnable parameters,
+        - :math:`U_t \in \mathbb{R}^{m \times p}` is the input at timestep :math:`t`,
+        - :math:`X_t \in \mathbb{R}^{m \times n}` is the implicit hidden state solved via a fixed-point equation,
+        - :math:`H_t \in \mathbb{R}^{m \times n}` is the RNN hidden state at timestep :math:`t`,
+        - :math:`\phi: \mathbb{R}^{n \times m} \to \mathbb{R}^{n \times m}` is an activation function (default is ReLU).
+    
+    Similar with `ImplicitModel`, here is an example of `ImplicitRNN`:
+    
+    >>> import torch
+    >>> from idl import ImplicitRNN
+    >>> 
+    >>> x = torch.randn(100, 60, 1)  # (batch_size=100, seq_len=60, input_dim=1)
+    >>> 
+    >>> model = ImplicitRNN(input_dim=1,  
+    >>>                     output_dim=1, 
+    >>>                     hidden_dim=128, 
+    >>>                     implicit_hidden_dim=64)
+    >>> 
+    >>> output = model(x)  # (batch_size=100, output_dim=1)
+    
     Args:
-        input_dim (int): Number of input features.
-        implicit_hidden_dim (int): Hidden dimension in the implicit model.
-        hidden_dim (int): Size of the recurrent hidden state.
-        output_dim (int): Size of the output features.
-        **kwargs (Any): Additional keyword arguments for ImplicitRNNCell.
+        input_dim (int): Number of input features (:math:`p`).
+        output_dim (int): Number of output features (:math:`q`).
+        implicit_hidden_dim (int): Hidden dimension in the implicit layer (:math:`n`).
+        hidden_dim (int): Size of the recurrent hidden state (:math:`n`).
+        **kwargs (Any): Additional keyword arguments for `ImplicitModel`.
     """
 
     def __init__(
         self,
         input_dim: int,
+        output_dim: int,
         implicit_hidden_dim: int,
         hidden_dim: int,
-        output_dim: int,
         **kwargs: Any
     ) -> None:
         
@@ -95,7 +134,7 @@ class ImplicitRNN(nn.Module):
         
     def forward(self, x: Tensor) -> Tensor:
         """
-        Forward pass of the ImplicitRNN.
+        Forward pass of `ImplicitRNN`.
 
         Args:
             x (Tensor): Input tensor of shape (batch_size, seq_len, input_dim).

@@ -6,39 +6,77 @@ from .implicit_function import ImplicitFunctionInf, ImplicitFunction, transpose,
 
 
 class ImplicitModel(nn.Module):
-    """
-    Creates an Implicit Model with:
-        A: hidden_dim * hidden_dim
-        B: hidden_dim * input_dim
-        C: output_dim * hidden_dim
-        D: output_dim * input_dim (if `no_D` is False)
-        X: hidden_dim * batch_size
-        U: input_dim * batch_size
+    r""" 
+    Base Implicit model described in `"Implicit Deep Learning" <https://arxiv.org/abs/1908.06315>`_.
 
-    Note that for X and U, the batch size comes first when inputting into the model.
-    These sizes reflect that the model internally transposes them so that their sizes line up with ABCD.
+    Given the following dimensions:
+        - :math:`p`: number of input features,
+        - :math:`q`: number of output features,
+        - :math:`n`: number of hidden features,
+        - :math:`m`: batch size (number of samples per batch),
+
+    the implicit model operates on an input matrix :math:`U \in \mathbb{R}^{p \times m}` and predicts an output matrix :math:`\hat{Y} \in \mathbb{R}^{q \times m}`, by solving the following equations:
+
+    .. math::
+        \begin{aligned}
+            X &= \phi(A X + B U) \quad &\text{(Equilibrium equation)}, \\
+            \hat{Y} &= C X + D U \quad &\text{(Prediction equation)},
+        \end{aligned}
+
+    where:
+        - :math:`A \in \mathbb{R}^{n \times n}, B \in \mathbb{R}^{n \times p}, C \in \mathbb{R}^{q \times n}, D \in \mathbb{R}^{q \times p}` are learnable parameters,
+        - :math:`X \in \mathbb{R}^{n \times m}` is the hidden state of the implicit model,
+        - :math:`\hat{Y} \in \mathbb{R}^{q \times m}` is the predicted output,
+        - :math:`\phi: \mathbb{R}^{n \times m} \to \mathbb{R}^{n \times m}` is an activation function (default is ReLU).
+        
+    For **low-rank approximation** of the implicit model, the matrix :math:`A` is calculated as:
+
+    .. math::
+        A = L R^T
+
+    where :math:`L, R \in \mathbb{R}^{n \times r}` with :math:`r \ll n`.
+        
+    To ensure the fixed-point equaion has an unique solution, the **wellposedness** of implicit model must be satisfied, which means
+    
+    .. math::
+        \left\Vert A \right\Vert_\infty \leq v
+    
+    **Note**: In conventional deep learning, the batch size typically comes first for inputs :math:`U`, hidden states :math:`X`, and outputs :math:`Y`. 
+    We follow this convention, but the model internally transposes these matrices to solve the fixed-point equation.
+    Users can input their data in the usual format, and the output will be returned in the standard format. Below is an example:
+
+    >>> import torch
+    >>> from idl import ImplicitModel
+    >>> 
+    >>> x = torch.randn(5, 64)  # (batch_size=5, input_dim=64)
+    >>> 
+    >>> model = ImplicitModel(input_dim=64,  
+    >>>                       output_dim=10, 
+    >>>                       hidden_dim=128)
+    >>> 
+    >>> output = model(x)  # (batch_size=5, output_dim=10)
 
     Args:
-        hidden_dim (int): Number of hidden features.
-        input_dim (int): Number of input features.
-        output_dim (int): Number of output features.
+        input_dim (int): Number of input features (:math:`p`).
+        output_dim (int): Number of output features (:math:`q`).
+        hidden_dim (int): Number of hidden features (:math:`n`).
+        is_low_rank (bool, optional): Whether to use low-rank approximation (default: False).
+        rank (int, optional): Rank for low-rank approximation (:math:`r`), required if `is_low_rank` is True.
         f (Type[ImplicitFunction], optional): The implicit function to use (default: ImplicitFunctionInf for well-posedness).
+        v (float, optional): Radius of the L-infinity norm ball (:math:`v`) for well-posedness. (default: 0.95).
         no_D (bool, optional): Whether to exclude matrix D (default: False).
         bias (bool, optional): Whether to include a bias term (default: False).
         mitr (int, optional): Max iterations for the forward pass. (default: 300).
         grad_mitr (int, optional): Max iterations for gradient computation. (default: 300).
         tol (float, optional): Convergence tolerance for the forward pass. (default: 3e-6).
         grad_tol (float, optional): Convergence tolerance for gradients. (default: 3e-6).
-        v (float, optional): Radius of the L-infinity norm ball for projection. (default: 0.95).
-        is_low_rank (bool, optional): Whether to use low-rank approximation (default: False).
-        rank (int, optional): Rank for low-rank approximation (required if `is_low_rank` is True).
     """
-
+    
     def __init__(
         self,
-        hidden_dim: int,
         input_dim: int,
         output_dim: int,
+        hidden_dim: int,
         f: Type[ImplicitFunction] = ImplicitFunctionInf,
         no_D: bool = False,
         bias: bool = False,
@@ -90,23 +128,14 @@ class ImplicitModel(nn.Module):
         X0: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
-        Performs a forward pass of the implicit model.
+        Forward pass of `ImplicitModel`.
 
         Args:
-            U (torch.Tensor): Input tensor of shape (batch_size, input_dim) or (batch_size, ..., input_dim).
-            X0 (torch.Tensor, optional): Initial hidden state tensor of shape (hidden_dim, batch_size).
+            U (torch.Tensor): Input tensor of shape (batch_size, input_dim).
+            X0 (torch.Tensor, optional): Initial hidden state tensor of shape (batch_size, hidden_dim).
 
         Returns:
             torch.Tensor: The output tensor of shape (batch_size, output_dim).
-
-        Process:
-            1. Transposes and processes the input `U` for compatibility with model dimensions.
-            2. Handles optional bias padding if `bias` is True.
-            3. Initializes or validates the initial hidden state `X0`.
-            4. Computes the hidden state `X` using the implicit function:
-                - Uses low-rank approximation if `is_low_rank` is True.
-                - Otherwise, applies the full weight matrix.
-            5. Computes the output as a combination of `C @ X` and `D @ U`, transposing back to batch-first format.
         """
 
         if (len(U.size()) == 3):

@@ -54,15 +54,16 @@ def main():
 
     # Initialize the Implicit Base model
     model = ImplicitModel(
-        hidden_dim=args.hidden_dim, 
         input_dim=input_dim, 
         output_dim=output_dim,
+        hidden_dim=args.hidden_dim, 
+        is_low_rank=args.is_low_rank,
+        rank=args.rank,
         mitr=args.mitr, 
         grad_mitr=args.grad_mitr, 
         tol=args.tol, 
-        grad_tol=args.grad_tol,
-        is_low_rank=args.is_low_rank, 
-        rank=args.rank)
+        grad_tol=args.grad_tol
+        )
 
     # Define loss function, optimizer, device and log directory
     optimizer = optim.Adam(model.parameters(), lr=args.lr)

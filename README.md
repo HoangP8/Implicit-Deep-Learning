@@ -73,7 +73,7 @@ To dive deeper into the motivation behind Implicit Models, check out this beginn
   ```
 
 ## Quick tour
-The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes four models: `ImplicitModel`, `ImplicitRNN`, `IDLHead`, and `SIM`. For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link).
+The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes four models: `ImplicitModel`, `ImplicitRNN`, and `SIM`. For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link).
 
 ### Example: `ImplicitModel`
 
@@ -108,40 +108,10 @@ for _ in range(epoch):
 
 For `ImplicitRNN`, the interface is similar to `ImplicitModel`.
 
+### Example: `SIM`
 
-### Example: `IDLHead`
-For `IDLHead`, you can replace standard attention heads in a Transformer model (e.g., GPT) with implicit attention heads. Here’s an example:
-
-
-```python
-from idl import IDLHead
-
-# Load data as normal
-train_data, val_data = load_data()
-
-# Define the Transformer Model (e.g., GPT)
-model = GPTLanguageModel(
-    vocab_size=...,  # Vocabulary size
-    n_embd=...,      # Embedding dimension
-    block_size=...,  # Context length
-    n_layer=...,     # Number of layers
-    n_head=...,      # Number of attention heads
-    dropout=...      # Dropout rate
-)
-
-# Replace standard attention heads with IDL attention heads
-for i in range(n_layer):
-    model.blocks[i].sa.heads = nn.ModuleList([
-        IDLHead(
-            n_embd // n_head,  # Dimension per head
-            n_embd,            # Embedding dimension
-            block_size,        # Context length
-        ) 
-        for _ in range(args.n_head)
-    ])
-
-# Normal GPT-model training
-train_model(args, model, train_data, val_data, device, log_file)
+```
+...
 ```
 
 To get familiar with the framework, start with the [Notebook tutorial](link). We also included a folder `example` in the repository, which contains subfolders for each model. Each subfolder includes a script for easy experimentation. For example, to run the IDL example, adjust the parameters in the script and execute:
