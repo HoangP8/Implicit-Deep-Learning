@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Any, Dict, Tuple, Optional
 
+from .solver import Solver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
@@ -104,7 +105,21 @@ class Trainer:
                 logger.info(f"Loss at epoch {epoch}: {loss.item()}")
         return model, losses
 
-class ProjectedGDLowrankSolver:
+class ProjectedGDLowRankSolver(Solver):
+    r"""
+    Train State-driven Implicit Model using projected gradient descent to force A low-rank and well-posed.
+    A, B are solved using projected gradient descent.
+    C, D are solved using numpy least square solver.
+
+    Args:
+        rank (int): Rank of the A.
+        num_epoch (int): Number of epochs to train A, B.
+        lambda_z (float): Lasso regularization parameter for Z.
+        lr (float): Learning rate.
+        verbose_epoch (int): Number of epochs to print the loss.
+        regen_states (bool, optional): Whether to regenerate states. Defaults to False.
+        tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
+    """
     def __init__(
         self,
         rank : Optional[int] = None,
@@ -115,20 +130,6 @@ class ProjectedGDLowrankSolver:
         regen_states : bool = False,
         tol : float = 1e-6,
     ):
-        """
-        Train State-driven Implicit Model using projected gradient descent to force A low-rank and well-posed.
-        A, B are solved using projected gradient descent.
-        C, D are solved using numpy least square solver.
-
-        Args:
-            rank (int): Rank of the A.
-            num_epoch (int): Number of epochs to train A, B.
-            lambda_z (float): Lasso regularization parameter for Z.
-            lr (float): Learning rate.
-            verbose_epoch (int): Number of epochs to print the loss.
-            regen_states (bool, optional): Whether to regenerate states. Defaults to False.
-            tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
-        """
         self.rank = rank
         self.num_epoch = num_epoch
         self.lambda_z = lambda_z

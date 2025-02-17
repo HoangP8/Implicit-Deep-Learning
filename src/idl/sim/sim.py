@@ -130,6 +130,15 @@ class HookManager:
 
 
 class SIM():
+    r"""
+    SIM base class.
+
+    Args:
+        config (dict): Configuration dictionary.
+        device (str or torch.device, optional): Device to use for SIM. Defaults to None.
+        dtype (str or torch.dtype, optional): Data type for SIM. Defaults to None.
+        standardize (bool, optional): Whether to standardize the input data using scipy StandardScaler. Defaults to False.
+    """
     def __init__(
         self,
         activation_fn : Callable = nn.ReLU,
@@ -139,16 +148,7 @@ class SIM():
         standardize : bool = False,
         device : Optional[Union[str, torch.device]] = "cpu", 
         dtype : Optional[Union[str, torch.dtype]] = torch.float32,
-    ):
-        """
-        SIM base class.
-
-        Args:
-            config (dict): Configuration dictionary.
-            device (str or torch.device, optional): Device to use for SIM. Defaults to None.
-            dtype (str or torch.dtype, optional): Data type for SIM. Defaults to None.
-            standardize (bool, optional): Whether to standardize the input data using scipy StandardScaler. Defaults to False.
-        """
+    ) -> None:
         self.activation_fn = activation_fn
         self.atol = atol
         self.kappa = kappa
@@ -169,7 +169,7 @@ class SIM():
         self,
         device : Optional[Union[str, torch.device]] = None, 
         dtype : Optional[Union[str, torch.dtype]] = None
-    ):
+    ) -> None:
         if device is not None:
             self.device = device
         if dtype is not None:

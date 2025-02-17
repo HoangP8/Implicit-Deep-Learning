@@ -8,6 +8,7 @@ import numpy as np
 from scipy import sparse
 from tqdm import tqdm
 
+from .solver import Solver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,24 @@ def create_shared_memory_block(ndarray_to_share):
         array_shm[:] = array[:]
     return shm_blocks, ndarray_shm
 
-class CVXSolver:
+class CVXSolver(Solver):
+    r"""
+    Train State-driven Implicit Model using CVXPY.
+    This is highly recommended for small-scale problems due to its high precision and easy tuning.
+
+    Args:
+        num_row (int, optional): Number of rows to solve in each process each iteration. Defaults to 1.
+        batch_size (int, optional): Number of columns to solve in each solving iteration. Defaults to 32.
+        num_processes (int, optional): Number of processes available. Defaults to 32.
+        lambda_y (float, optional): Lasso regularization parameter for Y. Defaults to 1e-6.
+        lambda_z (float, optional): Lasso regularization parameter for Z. Defaults to 1e-6.
+        l1_ratio (float, optional): Elastic Net regularization parameter. Defaults to 0.5.
+        elastic_net (bool, optional): Whether to use Elastic Net regularization. Defaults to False.
+        regularized (bool, optional): Whether to use L1 regularization. Defaults to True.
+        well_pose (bool, optional): Whether to enforce well-posedness constraint. Defaults to True.
+        regen_states (bool, optional): Whether to regenerate states. Defaults to False.
+        tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
+    """
     def __init__(
         self,
         num_row : int = 1,
@@ -46,23 +64,6 @@ class CVXSolver:
         regen_states : bool = False,
         tol : float = 1e-6,
     ):
-        """
-        Train State-driven Implicit Model using CVXPY.
-        This is highly recommended for small-scale problems due to its high precision and easy tuning.
-
-        Args:
-            num_row (int, optional): Number of rows to solve in each process each iteration. Defaults to 1.
-            batch_size (int, optional): Number of columns to solve in each solving iteration. Defaults to 32.
-            num_processes (int, optional): Number of processes available. Defaults to 32.
-            lambda_y (float, optional): Lasso regularization parameter for Y. Defaults to 1e-6.
-            lambda_z (float, optional): Lasso regularization parameter for Z. Defaults to 1e-6.
-            l1_ratio (float, optional): Elastic Net regularization parameter. Defaults to 0.5.
-            elastic_net (bool, optional): Whether to use Elastic Net regularization. Defaults to False.
-            regularized (bool, optional): Whether to use L1 regularization. Defaults to True.
-            well_pose (bool, optional): Whether to enforce well-posedness constraint. Defaults to True.
-            regen_states (bool, optional): Whether to regenerate states. Defaults to False.
-            tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
-        """
         self.num_row = num_row
         self.batch_size = batch_size
         self.processes = num_processes

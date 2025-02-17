@@ -5,12 +5,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Any, Dict, Optional, Tuple
 
+from .solver import Solver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
 
-class ADMMSolver:
+class ADMMSolver(Solver):
+    r"""
+    ADMM Consensus Solver on a single GPU.
+
+    Args:
+        num_epoch_ab (int, optional): Number of epochs for solving A and B. Defaults to 1000.
+        num_epoch_cd (int, optional): Number of epochs for solving C and D. Defaults to 100.
+        lambda_y (float, optional): Lasso regularization parameter for Y. Defaults to 1.0.
+        lambda_z (float, optional): Lasso regularization parameter for Z. Defaults to 1.0.
+        rho_ab (float, optional): ADMM's rho parameter for A and B. Defaults to 10.0.
+        rho_cd (float, optional): ADMM's rho parameter for C and D. Defaults to 10.0.
+        batch_feature_size (int, optional): Number of columns to solve in each solving iteration. This is used to control the memory usage.
+                The solver is performed (total_rows // batch_feature_size + 1) times. Defaults to 100.
+        regen_states (bool, optional): Whether to regenerate states. Defaults to False.
+        tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
+    """
     def __init__(
         self, 
         num_epoch_ab : int = 1000,
@@ -23,21 +39,6 @@ class ADMMSolver:
         regen_states : bool = False,
         tol : float = 1e-6,
     ):
-        """
-        ADMM Consensus Solver on a single GPU.
-
-        Args:
-            num_epoch_ab (int, optional): Number of epochs for solving A and B. Defaults to 1000.
-            num_epoch_cd (int, optional): Number of epochs for solving C and D. Defaults to 100.
-            lambda_y (float, optional): Lasso regularization parameter for Y. Defaults to 1.0.
-            lambda_z (float, optional): Lasso regularization parameter for Z. Defaults to 1.0.
-            rho_ab (float, optional): ADMM's rho parameter for A and B. Defaults to 10.0.
-            rho_cd (float, optional): ADMM's rho parameter for C and D. Defaults to 10.0.
-            batch_feature_size (int, optional): Number of columns to solve in each solving iteration. This is used to control the memory usage.
-                    The solver is performed (total_rows // batch_feature_size + 1) times. Defaults to 100.
-            regen_states (bool, optional): Whether to regenerate states. Defaults to False.
-            tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
-        """
         self.num_epoch_ab = num_epoch_ab
         self.num_epoch_cd = num_epoch_cd
         self.lambda_y = lambda_y

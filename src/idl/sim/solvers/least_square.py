@@ -2,24 +2,25 @@ import logging
 import numpy as np
 from typing import Any, Dict, Tuple
 
+from .solver import Solver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
-class LeastSquareSolver:
-    def __init__(
-            self, 
-            regen_states : bool = False,
-            tol : float = 1e-6,
-    ):
-        """
-        Solve using numpy.linalg.lstsq. 
-        Note: This solver is fast but it cannot handle the wellposeness condition (norm(A) <= kappa).
+class LeastSquareSolver(Solver):
+    r"""
+    Solve using numpy.linalg.lstsq. 
+    Note: This solver is fast but it cannot handle the wellposeness condition (norm(A) <= kappa).
 
-        Args:
-            regen_states (bool, optional): Whether to regenerate state data to solve exact C,D after solving A,B. Defaults to False.
-            tol (float, optional): Zero out weights that are less than tol. Defaults to 1e-6.
-        """
+    Args:
+        regen_states (bool, optional): Whether to regenerate state data to solve exact C,D after solving A,B. Defaults to False.
+        tol (float, optional): Zero out weights that are less than tol. Defaults to 1e-6.
+    """
+    def __init__(
+        self, 
+        regen_states : bool = False,
+        tol : float = 1e-6,
+    ):
         self.regen_states = regen_states
         self.tol = tol
 

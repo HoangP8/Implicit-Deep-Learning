@@ -9,12 +9,30 @@ import matplotlib.pyplot as plt
 import os
 from typing import Any, Dict, List, Optional, Union, Tuple
 
+from .solver import Solver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
 
-class ADMMMultiGPUSolver:
+class ADMMMultiGPUSolver(Solver):
+    r"""
+    ADMM Consensus Solver with distributed computation over multiple GPUs.
+    This is highly recommended for large-scale problems and when multiple GPUs are available.
+
+    Args:
+        gpu_ids (List[Union[int, torch.device]]): List of GPU IDs or devices.
+        num_epoch_ab (int, optional): Number of epochs for solving A and B. Defaults to 1000.
+        num_epoch_cd (int, optional): Number of epochs for solving C and D. Defaults to 100.
+        lambda_y (float, optional): Lasso regularization parameter for Y. Defaults to 1.0.
+        lambda_z (float, optional): Lasso regularization parameter for Z. Defaults to 1.0.
+        rho_ab (float, optional): ADMM's rho parameter for A and B. Defaults to 10.0.
+        rho_cd (float, optional): ADMM's rho parameter for C and D. Defaults to 10.0.
+        batch_feature_size (int, optional): Number of columns to solve in each solving iteration. This is used to control the memory usage.
+                The solver is performed (total_rows // batch_feature_size + 1) times. Defaults to 100.
+        regen_states (bool, optional): Whether to regenerate states. Defaults to False.
+        tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
+    """
     def __init__(
         self,
         gpu_ids : List[Union[int, torch.device]],
@@ -28,23 +46,7 @@ class ADMMMultiGPUSolver:
         regen_states : bool = False,
         tol : float = 1e-6,
     ):
-        """
-        ADMM Consensus Solver with distributed computation over multiple GPUs.
-        This is highly recommended for large-scale problems and when multiple GPUs are available.
-
-        Args:
-            gpu_ids (List[Union[int, torch.device]]): List of GPU IDs or devices.
-            num_epoch_ab (int, optional): Number of epochs for solving A and B. Defaults to 1000.
-            num_epoch_cd (int, optional): Number of epochs for solving C and D. Defaults to 100.
-            lambda_y (float, optional): Lasso regularization parameter for Y. Defaults to 1.0.
-            lambda_z (float, optional): Lasso regularization parameter for Z. Defaults to 1.0.
-            rho_ab (float, optional): ADMM's rho parameter for A and B. Defaults to 10.0.
-            rho_cd (float, optional): ADMM's rho parameter for C and D. Defaults to 10.0.
-            batch_feature_size (int, optional): Number of columns to solve in each solving iteration. This is used to control the memory usage.
-                    The solver is performed (total_rows // batch_feature_size + 1) times. Defaults to 100.
-            regen_states (bool, optional): Whether to regenerate states. Defaults to False.
-            tol (float, optional): Tolerance for zeroing out weights. Defaults to 1e-6.
-        """
+        super().__init__()
         self.gpu_ids = gpu_ids
         self.num_epoch_ab = num_epoch_ab
         self.num_epoch_cd = num_epoch_cd

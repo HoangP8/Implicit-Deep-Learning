@@ -1,16 +1,14 @@
 Implicit Models
 ===============
 
-Base Models
------------
-
 .. autoclass:: idl.implicit_base_model.ImplicitModel
    :members:
    :undoc-members:
 
-RNN Models
-----------
+A special case of Implicit Model for Recurrent Neural Networks is provided in the following section.
 
-.. autoclass:: idl.implicit_rnn_model.ImplicitRNN
-   :members:
-   :undoc-members:
+.. toctree::
+   :maxdepth: 2
+   :caption: Components:
+
+   rnn
