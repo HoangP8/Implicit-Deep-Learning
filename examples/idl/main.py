@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--grad_tol', type=float, default=3e-6, help="Gradient tolerance for convergence")
     parser.add_argument('--is_low_rank', type=bool, default=False, help="Enable low-rank configuration for the model")
     parser.add_argument('--rank', type=int, default=1, help="The number of rank for low-rank configuration")
-    parser.add_argument('--v', type=float, default=0.95, help="Inf ball")
+    parser.add_argument('--kappa', type=float, default=0.99, help="Inf ball")
     
     return parser.parse_args()
 
@@ -59,6 +59,7 @@ def main():
         hidden_dim=args.hidden_dim, 
         is_low_rank=args.is_low_rank,
         rank=args.rank,
+        kappa=args.kappa,
         mitr=args.mitr, 
         grad_mitr=args.grad_mitr, 
         tol=args.tol, 

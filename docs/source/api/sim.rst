@@ -9,7 +9,7 @@ A standard Implicit Model is modeled by the following equation:
       \hat{Y} &= C X + D U \quad &\text{(Prediction equation)},
    \end{aligned}
 
-The State-driven trainig method (described in the paper `State-driven Implicit Models <https://arxiv.org/abs/2209.09389>`_) is a method to distill implicit models 
+The State-driven training method (described in the paper `State-driven Implicit Models <https://arxiv.org/abs/2209.09389>`_) is a method to distill implicit models 
 from pre-trained explicit networks by matching the *internal state vectors* of the explicit networks.
 
 Given an input matrix :math:`U \in \mathbb{R}^{p \times m}`, synthetic state matrices :math:`Z \in \mathbb{R}^{n \times m}` (the pre-activation vectors of the explicit networks), 

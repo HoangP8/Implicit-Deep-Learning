@@ -39,7 +39,7 @@ class ImplicitModel(nn.Module):
     To ensure the fixed-point equaion has an unique solution, the **wellposedness** of implicit model must be satisfied, which means
     
     .. math::
-        \left\Vert A \right\Vert_\infty \leq v
+        0 \leq \left\Vert A \right\Vert_\infty < \kappa, \quad \text{where } 0 \leq \kappa < 1
     
     **Note**: In conventional deep learning, the batch size typically comes first for inputs :math:`U`, hidden states :math:`X`, and outputs :math:`Y`. 
     We follow this convention, but the model internally transposes these matrices to solve the fixed-point equation.
@@ -63,7 +63,7 @@ class ImplicitModel(nn.Module):
         is_low_rank (bool, optional): Whether to use low-rank approximation (default: False).
         rank (int, optional): Rank for low-rank approximation (:math:`r`), required if `is_low_rank` is True.
         f (Type[ImplicitFunction], optional): The implicit function to use (default: ImplicitFunctionInf for well-posedness).
-        v (float, optional): Radius of the L-infinity norm ball (:math:`v`) for well-posedness. (default: 0.95).
+        kappa (float, optional): Radius of the L-infinity norm ball (:math:`\kappa`) for well-posedness. (default: 0.99).
         no_D (bool, optional): Whether to exclude matrix D (default: False).
         bias (bool, optional): Whether to include a bias term (default: False).
         mitr (int, optional): Max iterations for the forward pass. (default: 300).
@@ -84,7 +84,7 @@ class ImplicitModel(nn.Module):
         grad_mitr: int = 300,
         tol: float = 3e-6,
         grad_tol: float = 3e-6,
-        v: float = 0.95,
+        kappa: float = 0.99,
         is_low_rank: bool = False,
         rank: Optional[int] = None
     ) -> None:
@@ -119,7 +119,7 @@ class ImplicitModel(nn.Module):
             self.D: torch.Tensor = torch.zeros((output_dim, input_dim), requires_grad=False)
 
         self.f: ImplicitFunction = f()
-        self.f.set_parameters(mitr=mitr, grad_mitr=grad_mitr, tol=tol, grad_tol=grad_tol, v=v)
+        self.f.set_parameters(mitr=mitr, grad_mitr=grad_mitr, tol=tol, grad_tol=grad_tol, kappa=kappa)
 
 
     def forward(
@@ -155,8 +155,8 @@ class ImplicitModel(nn.Module):
             X0 = torch.zeros(X_shape, dtype=U.dtype, device=U.device)
 
         if self.is_low_rank:
-            L_projected = project_onto_Linf_ball(self.L, self.f.v)
-            RT_projected = project_onto_Linf_ball(transpose(self.R), self.f.v)
+            L_projected = project_onto_Linf_ball(self.L, self.f.kappa)
+            RT_projected = project_onto_Linf_ball(transpose(self.R), self.f.kappa)
             X = self.f.apply(L_projected @ RT_projected, self.B, X0, U)
             
         else:

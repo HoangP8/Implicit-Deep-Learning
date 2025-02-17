@@ -10,7 +10,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train an Implicit RNN model on Netflix or Spiky synthetic dataset")
     
     # Dataset
-    parser.add_argument('--dataset', type=str, choices=['netflix', 'spiky'], required=True, help="Dataset to use: 'netflix' or 'spiky'")
+    parser.add_argument('--dataset', type=str, choices=['spiky'], required=True, help="Dataset to use: 'spiky'")
     parser.add_argument('--look_back', type=int, default=60, help="Look-back period for time series data")
     
     # Optimization parameters
@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--grad_tol', type=float, default=1e-6, help="Gradient tolerance for convergence")
     parser.add_argument('--is_low_rank', type=bool, default=False, help="Whether to use low rank approximation (True/False)")
     parser.add_argument('--rank', type=int, default=1, help="Rank for low rank approximation (used only if is_low_rank is True)")
-    parser.add_argument('--v', type=float, default=0.95, help="Inf ball")
+    parser.add_argument('--kappa', type=float, default=0.99, help="Inf ball")
     
     return parser.parse_args()
 
@@ -56,11 +56,11 @@ def main():
         hidden_dim=args.hidden_dim,
         is_low_rank=args.is_low_rank,
         rank=args.rank,
+        kappa=args.kappa,
         mitr=args.mitr,
         grad_mitr=args.grad_mitr,
         tol=args.tol,
-        grad_tol=args.grad_tol,
-        v=args.v
+        grad_tol=args.grad_tol
         )
 
     print(f'Model size: {sum(p.numel() for p in model.parameters())} parameters')

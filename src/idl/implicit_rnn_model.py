@@ -62,7 +62,8 @@ class ImplicitRNNCell(nn.Module):
 
 class ImplicitRNN(nn.Module):
     r""" 
-    Implicit Recurrent Neural Network (ImplicitRNN) for sequence modeling.
+    Implicit Recurrent Neural Network (`ImplicitRNN`) for sequence modeling. Unlike traditional RNNs that update hidden states using explicit linear transformations,
+    `ImplicitRNN` uses an implicit layer to define recurrence in a standard RNN framework.
 
     Given the following dimensions:
         - :math:`p`: number of input features,

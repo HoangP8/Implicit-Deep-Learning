@@ -1,6 +1,6 @@
 import torch
 from torch.autograd import Function
-from typing import Optional, Tuple, Type, Any
+from typing import Optional, Tuple, Any
 import numpy as np
 import warnings
 import torch
@@ -14,21 +14,21 @@ def transpose(X: torch.Tensor) -> torch.Tensor:
     return X.T
 
 
-def project_onto_Linf_ball(A: torch.Tensor, v: float) -> torch.Tensor:
+def project_onto_Linf_ball(A: torch.Tensor, kappa: float) -> torch.Tensor:
     """
-    Project a matrix onto the L-infty norm ball of radius v.
+    Project a matrix onto the L-infty norm ball of radius kappa.
 
     Args:
         A (torch.Tensor): Input matrix.
-        v (float): The L-infty norm ball radius.
+        kappa (float): The L-infty norm ball radius.
 
     Returns:
         torch.Tensor: The scaled matrix.
     """
 
     norm_inf_A = torch.linalg.matrix_norm(A, ord=float('inf')) 
-    if norm_inf_A > v:
-        A = (v / norm_inf_A) * A
+    if norm_inf_A > kappa:
+        A = (kappa / norm_inf_A) * A
     return A
 
 
@@ -50,7 +50,7 @@ class ImplicitFunction(Function):
         grad_mitr: Optional[int] = None,
         tol: Optional[float] = None,
         grad_tol: Optional[float] = None,
-        v: Optional[float] = None
+        kappa: Optional[float] = None
     ) -> None:
         """
         Set parameters for Picard iteration and convergence.
@@ -60,7 +60,7 @@ class ImplicitFunction(Function):
             grad_mitr (int): Max iterations for gradient computation.
             tol (float): Convergence tolerance for the forward pass.
             grad_tol (float): Convergence tolerance for gradients.
-            v (float): Radius of the L-infinity norm ball for projection.
+            kappa (float): Radius of the L-infinity norm ball for projection.
         """
 
         if mitr is not None:
@@ -71,8 +71,8 @@ class ImplicitFunction(Function):
             cls.tol = tol
         if grad_tol is not None:
             cls.grad_tol = grad_tol
-        if v is not None:
-            cls.v = v                    
+        if kappa is not None:
+            cls.kappa = kappa                    
     
     @classmethod
     def forward(
@@ -317,5 +317,5 @@ class ImplicitFunctionInf(ImplicitFunction):
             torch.Tensor: The stable solution for X.
         """
         
-        A = project_onto_Linf_ball(A, cls.v)
+        A = project_onto_Linf_ball(A, cls.kappa)
         return super(ImplicitFunctionInf, cls).forward(ctx, A, B, X0, U)

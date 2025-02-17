@@ -80,8 +80,8 @@ def train_time_series(
         loss = loss_fn(y_train_pred, y_train)
 
         if epoch % 10 == 0:
-            log_file.write(f"Epoch {epoch}/{args.epochs}, MSE Loss: {loss.item():.4f}\n")
-            print(f"Epoch {epoch}/{args.epochs}, MSE Loss: {loss.item():.4f}\n")
+            log_file.write(f"Epoch {epoch}/{args.epochs}, MSE Loss: {loss.item():.4f}")
+            print(f"Epoch {epoch}/{args.epochs}, MSE Loss: {loss.item():.4f}")
 
         optimizer.zero_grad()
         loss.backward()
