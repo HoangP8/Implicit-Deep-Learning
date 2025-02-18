@@ -91,7 +91,7 @@ model = ImplicitModel(
     hidden_dim=100,  # Size of the hidden dimension
     input_dim=3072,  # Input dimension (e.g., 3*32*32 for CIFAR-10)
     output_dim=10,   # Output dimension (e.g., 10 classes for CIFAR-10)
-)
+).to(device)
 
 # Normal training loop
 optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
@@ -110,11 +110,32 @@ For `ImplicitRNN`, the interface is similar to `ImplicitModel`.
 
 ### Example: `SIM`
 
-```
-...
+```python
+from idl.sim import SIM
+from idl.sim.solvers import CVXSolver
+
+# Normal data processing
+train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
+
+# Define an explicit model
+model = MLP(input_dim, hidden_dim, output_dim).to(device)
+
+# Define SIM model
+sim = SIM(device=device)
+
+# Loss function and optimizer
+optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
+loss_fn = ...    # Choose loss function (e.g., Cross-Entropy)
+
+# Train and evaluate the SIM model
+sim.train(solver=CVXSolver(), model=explicit_model, dataloader=train_loader)
+sim.evaluate(test_loader)
 ```
 
-To get familiar with the framework, start with the [Notebook tutorial](link). We also included a folder `example` in the repository, which contains subfolders for each model. Each subfolder includes a script for easy experimentation. For example, to run the IDL example, adjust the parameters in the script and execute:
+We provide several solvers for `SIM`, including `ADMMSolver`, `ADMMMultiGPUSolver`, `CVXSolver`, `ProjectedGDLowRankSolver`, `LeastSquareSolver`.  For more information on their hyperparameters, please refer to the [documentation](link).
+
+### Full instruction
+To get familiar with the framework, start with the [Notebook tutorial](link). We also included a folder `example` in the repository [here](link), which contains subfolders for each model. Each subfolder includes a script for easy experimentation. For example, to run the IDL example, adjust the parameters in the script and execute:
 
   ```
   bash examples/idl/idl.sh

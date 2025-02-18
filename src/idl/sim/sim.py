@@ -141,7 +141,7 @@ class SIM():
     """
     def __init__(
         self,
-        activation_fn : Callable = nn.ReLU,
+        activation_fn : Callable = nn.ReLU(),
         kappa : float = 0.99,
         atol : float = 1e-6,
         skip_layers : Optional[int] = None,
@@ -360,7 +360,7 @@ class SIM():
         X_test = fixpoint_iteration(self.weights['A'], self.weights['B'], U_test, self.activation_fn, self.device).cpu().numpy()
         Y_test_pred = self.weights['C'] @ X_test + self.weights['D'] @ U_test.cpu().numpy()
         test_accuracy = np.mean(
-            np.argmax(Y_test_pred, axis=0) == dataloader.dataset.targets.numpy()
+            np.argmax(Y_test_pred, axis=0) == dataloader.dataset.targets.cpu().numpy()
         )
-
+        print(f"Test accuruacy: {test_accuracy}")
         return test_accuracy
