@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 import os
 from typing import Any, Dict, List, Optional, Union, Tuple
 
-from .solver import Solver
+from .solver import BaseSolver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
 
-class ADMMMultiGPUSolver(Solver):
+class ADMMMultiGPUSolver(BaseSolver):
     r"""
     ADMM Consensus Solver with distributed computation over multiple GPUs.
     This is highly recommended for large-scale problems and when multiple GPUs are available.

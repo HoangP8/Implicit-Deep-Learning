@@ -6,29 +6,31 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" height="20" style="border: none;">
   </a>
-  <a href="https://pypi.org/project/torchcam/">
-    <img src="https://img.shields.io/pypi/v/torchcam.svg?logo=PyPI&logoColor=fff&style=flat-square&label=PyPI" alt="PyPi Version" style="border: none;">
-  </a>
-  <a href="https://colab.research.google.com/github/frgfm/notebooks/blob/main/torch-cam/quicktour.ipynb">
-    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Tutorial" style="border: none;">
-  </a>
-  <a href="https://frgfm.github.io/torch-cam">
-    <img src="https://img.shields.io/github/actions/workflow/status/frgfm/torch-cam/page-build.yml?branch=main&label=Documentation&logo=read-the-docs&logoColor=white&style=flat-square" alt="Documentation" style="border: none;">
-  </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#introduction"><b>Introduction</b></a> 
-  • 
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning/blob/main/tutorial.ipynb"><b>Quick Tutorial</b></a> 
+  •
   <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#installation"><b>Installation</b></a> 
   •
-  <a href="https://torchdeq.readthedocs.io/en/latest/deq-zoo/model.html"><b>Quick Tour</b></a>
+  <a href="https://idl.readthedocs.io/"><b>Documentation</b></a>
   •
-  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#contribution"><b>Contribution</b></a> 
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning/tree/main/examples"><b>Examples</b></a>
   • 
   <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#contribution"><b>Citation</b></a>
 </p>
 
+**Authors**: Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), and [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
+
+## Related Works 
+
+**Implicit Deep Learning** \
+[paper on arxiv](https://arxiv.org/abs/1908.06315) \
+Laurent El Ghaoui, Fangda Gu, Bertrand Travacca, Armin Askari, Alicia Y. Tsai
+
+**State-driven Implicit Modeling for Sparsity and Robustness in Neural Networks** \
+[paper on arxiv](https://arxiv.org/abs/2209.09389) \
+Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
 
 ## Introduction
 Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers conventionally. Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations:
@@ -58,22 +60,22 @@ To dive deeper into the motivation behind Implicit Models, check out this beginn
 
 
 ## Installation
-- Install required packages by running:
+<!-- - Install required packages by running:
   ```
   pip install -r requirements.txt
-  ```
+  ``` -->
 - Through `pip`:
   ```
   pip install idl
   ```
 - From source:
   ```
-  git clone https://github.com/HoangP8/Implicit-Deep-Learning && cd Implicit-Deep-Learning
+  git clone https://github.com/HoangP8/Implicit-Deep-Learning 
   pip install -e .
   ```
 
 ## Quick tour
-The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes four models: `ImplicitModel`, `ImplicitRNN`, and `SIM`. For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link).
+The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes the basic `ImplicitModel`, along with a special form for Implicit Recurrent Neural Networks `ImplicitRNN`, and a special state-driven training approach in `SIM`. For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link).
 
 ### Example: `ImplicitModel`
 
@@ -110,39 +112,42 @@ For `ImplicitRNN`, the interface is similar to `ImplicitModel`.
 
 ### Example: `SIM`
 
+For state-driven training, a pretrained explicit neural network is required to synthesize the training data, and a convex optimization solver is required to solve the state-driven training problem. A basic example is shown below:
+
 ```python
+import torch
 from idl.sim import SIM
 from idl.sim.solvers import CVXSolver
 
 # Normal data processing
 train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
 
-# Define an explicit model
-model = MLP(input_dim, hidden_dim, output_dim).to(device)
+# Load a pretrained explicit model
+explicit_model = MLP(input_dim, hidden_dim, output_dim).to(device)
+explicit_model.load_state_dict(torch.load('checkpoint.pt'))
 
 # Define SIM model
-sim = SIM(device=device)
+sim = SIM(activation_fn=torch.nn.functional.relu, device=device)
 
-# Loss function and optimizer
-optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
-loss_fn = ...    # Choose loss function (e.g., Cross-Entropy)
+# Define optimization solver
+solver = CVXSolver()
 
 # Train and evaluate the SIM model
-sim.train(solver=CVXSolver(), model=explicit_model, dataloader=train_loader)
+sim.train(solver=solver, model=explicit_model, dataloader=train_loader)
 sim.evaluate(test_loader)
 ```
 
-We provide several solvers for `SIM`, including `ADMMSolver`, `ADMMMultiGPUSolver`, `CVXSolver`, `ProjectedGDLowRankSolver`, `LeastSquareSolver`.  For more information on their hyperparameters, please refer to the [documentation](link).
+We already provide several solvers for `SIM`, including `ADMMSolver`, `ADMMMultiGPUSolver` (for distributed training on several GPUs), `CVXSolver`, `ProjectedGDLowRankSolver` (training with projected gradient descent while enforcing the weight matrix A to be low-rank), and `LeastSquareSolver` (using `numpy.linalg.lstsq` while ignoring the well-posedness condition). Users can also implement their own solvers by inheriting from the `BaseSolver` class.
+
+For more information on their hyperparameters, please refer to the [documentation](link).
 
 ### Full instruction
-To get familiar with the framework, start with the [Notebook tutorial](link). We also included a folder `example` in the repository [here](link), which contains subfolders for each model. Each subfolder includes a script for easy experimentation. For example, to run the IDL example, adjust the parameters in the script and execute:
+To get familiar with the framework, start with our [Notebook tutorial](https://github.com/HoangP8/Implicit-Deep-Learning/blob/main/tutorial.ipynb). We also included a folder [examples](https://github.com/HoangP8/Implicit-Deep-Learning/tree/main/examples), which contains example uses for each model. For example, to run the IDL example, adjust the parameters in the script and execute:
 
   ```
   bash examples/idl/idl.sh
   ```
 
-
-## Contribution
 
 ## Citation
 
@@ -163,7 +168,7 @@ To get familiar with the framework, start with the [Notebook tutorial](link). We
 ```
 @article{tsai2022state,
   title={State-driven implicit modeling for sparsity and robustness in neural networks},
-  author={Tsai, Alicia Y and Decugis, Juliette and Ghaoui, Laurent El and Atamt{\"u}rk, Alper},
+  author={Tsai, Alicia Y and Decugis, Juliette and Ghaoui, Laurent El and Atamturk, Alper},
   journal={arXiv preprint arXiv:2209.09389},
   year={2022}
 }

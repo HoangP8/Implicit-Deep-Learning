@@ -5,13 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Any, Dict, Optional, Tuple
 
-from .solver import Solver
+from .solver import BaseSolver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
 
-class ADMMSolver(Solver):
+class ADMMSolver(BaseSolver):
     r"""
     ADMM Consensus Solver on a single GPU.
 

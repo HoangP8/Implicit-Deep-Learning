@@ -8,7 +8,7 @@ import numpy as np
 from scipy import sparse
 from tqdm import tqdm
 
-from .solver import Solver
+from .solver import BaseSolver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def create_shared_memory_block(ndarray_to_share):
         array_shm[:] = array[:]
     return shm_blocks, ndarray_shm
 
-class CVXSolver(Solver):
+class CVXSolver(BaseSolver):
     r"""
     Train State-driven Implicit Model using CVXPY.
     This is highly recommended for small-scale problems due to its high precision and easy tuning.

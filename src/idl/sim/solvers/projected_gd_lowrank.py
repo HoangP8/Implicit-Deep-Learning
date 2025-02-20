@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import Any, Dict, Tuple, Optional
 
-from .solver import Solver
+from .solver import BaseSolver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ class Trainer:
                 logger.info(f"Loss at epoch {epoch}: {loss.item()}")
         return model, losses
 
-class ProjectedGDLowRankSolver(Solver):
+class ProjectedGDLowRankSolver(BaseSolver):
     r"""
     Train State-driven Implicit Model using projected gradient descent to force A low-rank and well-posed.
     A, B are solved using projected gradient descent.
