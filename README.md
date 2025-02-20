@@ -6,6 +6,9 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" height="20" style="border: none;">
   </a>
+  <a href="https://readthedocs.org/projects/idl/badge/?version=latest">
+    <img src="https://img.shields.io/badge/documentation-latest-yellow.svg" alt="Documentation" height="20" style="border: none;">
+  </a>
 </p>
 
 <p align="center">
@@ -13,23 +16,21 @@
   •
   <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#installation"><b>Installation</b></a> 
   •
-  <a href="https://idl.readthedocs.io/"><b>Documentation</b></a>
-  •
   <a href="https://github.com/HoangP8/Implicit-Deep-Learning/tree/main/examples"><b>Examples</b></a>
   • 
-  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#contribution"><b>Citation</b></a>
+  <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#citation"><b>Citation</b></a>
 </p>
 
-**Authors**: Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), and [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
+**Authors**: Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
 
 ## Related Works 
 
 **Implicit Deep Learning** \
-[paper on arxiv](https://arxiv.org/abs/1908.06315) \
+[arxiv paper](https://arxiv.org/abs/1908.06315) \
 Laurent El Ghaoui, Fangda Gu, Bertrand Travacca, Armin Askari, Alicia Y. Tsai
 
 **State-driven Implicit Modeling for Sparsity and Robustness in Neural Networks** \
-[paper on arxiv](https://arxiv.org/abs/2209.09389) \
+[arxiv paper](https://arxiv.org/abs/2209.09389) \
 Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
 
 ## Introduction
@@ -56,7 +57,7 @@ As opposed to the above figure, the typical implicit model does not have a clear
 </p>
 
 
-To dive deeper into the motivation behind Implicit Models, check out this beginner-friendly article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). If you're curious about the math and technical details, the full framework is explained in [this journal article](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
+To dive deeper into the motivation behind Implicit Models, check out this beginner-friendly article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). If you're curious about the math and technical details, the full framework is explained in [this journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
 
 
 ## Installation
@@ -70,12 +71,14 @@ To dive deeper into the motivation behind Implicit Models, check out this beginn
   ```
 - From source:
   ```
-  git clone https://github.com/HoangP8/Implicit-Deep-Learning 
+  git clone https://github.com/HoangP8/Implicit-Deep-Learning && cd Implicit-Deep-Learning
   pip install -e .
   ```
 
 ## Quick tour
-The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes the basic `ImplicitModel`, along with a special form for Implicit Recurrent Neural Networks `ImplicitRNN`, and a special state-driven training approach in `SIM`. For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link).
+The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes the basic `ImplicitModel`, along with a special form for Implicit Recurrent Neural Networks `ImplicitRNN`, and a special state-driven training approach in `SIM`. 
+
+For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link). Also check out the documentation to get to know all functionalities of our package.
 
 ### Example: `ImplicitModel`
 
