@@ -45,12 +45,12 @@ where $\phi: \mathbb{R}^{n\times m} \to \mathbb{R}^{n\times m}$ is a nonlinear a
 
 For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network.
 <p align="center">
-  <img src="figures/ff-illus.jpg" alt="2-layer feedforward" width="80%"><br>
+  <img src="docs/assets/ff-illus.jpg" alt="2-layer feedforward" width="80%"><br>
 </p>
 
 As opposed to the above figure, the typical implicit model does not have a clear hierarchical, layered structure.
 <p align="center">
-  <img src="figures/im-illus.jpg" alt="typical implicit model" width="80%"><br>
+  <img src="docs/assets/im-illus.jpg" alt="typical implicit model" width="80%"><br>
 </p>
 
 
