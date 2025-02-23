@@ -10,7 +10,6 @@ from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
-
 class ADMMSolver(BaseSolver):
     r"""
     ADMM Consensus Solver on a single GPU.
