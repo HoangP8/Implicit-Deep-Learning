@@ -2,12 +2,12 @@ import logging
 import numpy as np
 from typing import Any, Dict, Tuple
 
-from .solver import Solver
+from .solver import BaseSolver
 from ..utils import fixpoint_iteration
 
 logger = logging.getLogger(__name__)
 
-class LeastSquareSolver(Solver):
+class LeastSquareSolver(BaseSolver):
     r"""
     Solve using numpy.linalg.lstsq. 
     Note: This solver is fast but it cannot handle the wellposeness condition (norm(A) <= kappa).

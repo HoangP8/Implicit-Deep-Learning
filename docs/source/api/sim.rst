@@ -33,7 +33,7 @@ Please refer to the paper for more details about the SIM training method. In ord
 For the first phase, we abstracted all the necessary components into the :class:`idl.sim.sim.SIM` class.
 
 For the second phase, several solvers are already provided in the next sections. 
-However, you can also implement your own solver by inheriting from the :class:`idl.sim.solvers.solver.Solver` class.
+However, you can also implement your own solver by inheriting from the :class:`idl.sim.solvers.solver.BaseSolver` class.
 
 .. autoclass:: idl.sim.sim.SIM
    :members:

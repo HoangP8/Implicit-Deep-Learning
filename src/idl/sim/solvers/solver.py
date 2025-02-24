@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Tuple
 import numpy as np
 
-class Solver(ABC):
+class BaseSolver(ABC):
     r"""
     Base class for all solvers. All solver implementations must inherit from this class
     and implement the solve method.

@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to IDL Documentation
-============================
+Welcome to IDL Package
+======================
 
 .. toctree::
    :maxdepth: 2
@@ -20,8 +20,8 @@ Key Features
 ------------
 
 * Implicit Modeling with optional low-rank training
-* State-driven Implicit Models (SIM)
-* Support for various datasets and architectures
+* State-driven Implicit Modeling (SIM) training approach
+* Easy to use, seamless integration with Pytorch autograd
 
 Getting Started
 ===============
