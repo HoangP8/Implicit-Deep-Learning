@@ -63,21 +63,23 @@ $$
 This can be rewritten equivalently in matrix form as:
 
 $$
-\begin{aligned}
-x^\star &= \phi(A x + B u) 
+x^\star = \phi(A x + B u) 
 = \phi \left(
-\begin{pmatrix} 0 & W_1 \\ 0 & 0 \end{pmatrix} 
-\begin{pmatrix} x_2 \\ x_1 \end{pmatrix} 
-+ \begin{pmatrix} 0 \\ W_0 \end{pmatrix} u
-\right) \\
-&= \phi \begin{pmatrix} W_1 x_1 \\ W_0 u \end{pmatrix} 
-= \begin{pmatrix} x_2 \\ x_1 \end{pmatrix}, \\[8pt]
-\hat{y} &= C x^\star + D u 
-= \begin{pmatrix} W_2 & 0 \end{pmatrix} 
-\begin{pmatrix} x_2 \\ x_1 \end{pmatrix} 
-+ \begin{pmatrix} 0 \end{pmatrix} u \\
-&= W_2 x_2.
-\end{aligned}
+\begin{bmatrix} 0 & W_1 \\ 0 & 0 \end{bmatrix} 
+\begin{bmatrix} x_2 \\ x_1 \end{bmatrix} 
++ \begin{bmatrix} 0 \\ W_0 \end{bmatrix} u
+\right)
+= \phi \begin{bmatrix} W_1 x_1 \\ W_0 u \end{bmatrix} 
+= \begin{bmatrix} x_2 \\ x_1 \end{bmatrix}
+$$
+
+
+$$
+\hat{y} = C x^\star + D u 
+= \begin{bmatrix} W_2 & 0 \end{bmatrix} 
+\begin{bmatrix} x_2 \\ x_1 \end{bmatrix} 
++ \begin{bmatrix} 0 \end{bmatrix} u
+= W_2 x_2.
 $$
 
 
