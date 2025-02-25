@@ -52,7 +52,7 @@ $$
 
 This can be rewritten equivalently in matrix form as:
 
-$$x^{\star} = \phi(A x + B u) = \phi \left( \left[\begin{array}{cc} 
+$$x = \phi(A x + B u) = \phi \left( \left[\begin{array}{cc} 
 0 & W_1 \\
 0 & 0 
 \end{array}\right] \left[\begin{array}{c} 
@@ -71,7 +71,7 @@ x_2 \\
 x_1 
 \end{array}\right]$$
 
-$$\hat{y} = C x^{\star} + D u = \left[\begin{array}{cc} 
+$$\hat{y} = C x + D u = \left[\begin{array}{cc} 
 W_2 & 0 
 \end{array}\right] \left[\begin{array}{c} 
 x_2 \\
