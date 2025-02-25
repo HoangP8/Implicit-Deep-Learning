@@ -62,7 +62,8 @@ $$
 
 This can be rewritten equivalently in matrix form as:
 
-$$\begin{aligned}
+$$
+\begin{aligned}
 x^\star &= \phi(A x + B u) 
 = \phi \left(
 \begin{pmatrix} 0 & W_1 \\ 0 & 0 \end{pmatrix} 
@@ -76,7 +77,8 @@ x^\star &= \phi(A x + B u)
 \begin{pmatrix} x_2 \\ x_1 \end{pmatrix} 
 + \begin{pmatrix} 0 \end{pmatrix} u \\
 &= W_2 x_2.
-\end{aligned}$$
+\end{aligned}
+$$
 
 
 <!-- Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers conventionally. Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations: -->
