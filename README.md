@@ -52,17 +52,33 @@ $$
 
 This can be rewritten equivalently in matrix form as:
 
-$$
-x^{\star} = \phi(A x + B u) = \phi \left( \begin{pmatrix} 0 & W_1 \\ 0 & 0 \end{pmatrix} \begin{pmatrix} x_2 \\ x_1 \end{pmatrix} + \begin{pmatrix} 0 \\ W_0 \end{pmatrix} u \right)
-$$
+$$x^{\star} = \phi(A x + B u) = \phi \left( \left[\begin{array}{cc} 
+0 & W_1 \\
+0 & 0 
+\end{array}\right] \left[\begin{array}{c} 
+x_2 \\
+x_1 
+\end{array}\right] + \left[\begin{array}{c} 
+0 \\
+W_0 
+\end{array}\right] u \right)$$
 
-$$
-= \phi \begin{pmatrix} W_1 x_1 \\ W_0 u \end{pmatrix} = \begin{pmatrix} x_2 \\ x_1 \end{pmatrix}
-$$
+$$= \phi \left[\begin{array}{c} 
+W_1 x_1 \\
+W_0 u 
+\end{array}\right] = \left[\begin{array}{c} 
+x_2 \\
+x_1 
+\end{array}\right]$$
 
-$$
-\hat{y} = C x^{\star} + D u = \begin{pmatrix} W_2 & 0 \end{pmatrix} \begin{pmatrix} x_2 \\ x_1 \end{pmatrix} + \begin{pmatrix} 0 \end{pmatrix} u = W_2 x_2
-$$
+$$\hat{y} = C x^{\star} + D u = \left[\begin{array}{cc} 
+W_2 & 0 
+\end{array}\right] \left[\begin{array}{c} 
+x_2 \\
+x_1 
+\end{array}\right] + \left[\begin{array}{c} 
+0 
+\end{array}\right] u = W_2 x_2$$
 
 
 <!-- Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers conventionally. Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations: -->
@@ -84,8 +100,7 @@ For illustration, below is an implicit model equivalent to a 2-layer feedforward
 
 As opposed to the above figure, the typical implicit model does not have a clear hierarchical, layered structure.
 <p align="center">
-  <img src="docs/assets/im-illus.jpg" alt="typical implicit model" width="80%"><br>
-</p> -->
+  <img src="docs/assets/im-illus.jpg" alt="typical implicit model" width="80%"><br> -->
 
 
 To dive deeper into the motivation behind Implicit Models, check out this beginner-friendly article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). If you're curious about the math and technical details, the full framework is explained in [this journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
