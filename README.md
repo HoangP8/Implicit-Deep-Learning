@@ -53,15 +53,15 @@ $$
 This can be rewritten equivalently in matrix form as:
 
 $$
-x^{\star} = \phi(A x + B u) = \phi \left( \begin{array}{cc} 0 & W_1 \\ 0 & 0 \end{array} \begin{array}{c} x_2 \\ x_1 \end{array} + \begin{array}{c} 0 \\ W_0 \end{array} u \right)
+x^{\star} = \phi(A x + B u) = \phi \left( \begin{pmatrix} 0 & W_1 \\ 0 & 0 \end{pmatrix} \begin{pmatrix} x_2 \\ x_1 \end{pmatrix} + \begin{pmatrix} 0 \\ W_0 \end{pmatrix} u \right)
 $$
 
 $$
-= \phi \begin{array}{c} W_1 x_1 \\ W_0 u \end{array} = \begin{array}{c} x_2 \\ x_1 \end{array}
+= \phi \begin{pmatrix} W_1 x_1 \\ W_0 u \end{pmatrix} = \begin{pmatrix} x_2 \\ x_1 \end{pmatrix}
 $$
 
 $$
-\hat{y} = C x^{\star} + D u = \begin{array}{cc} W_2 & 0 \end{array} \begin{array}{c} x_2 \\ x_1 \end{array} + \begin{array}{c} 0 \end{array} u = W_2 x_2
+\hat{y} = C x^{\star} + D u = \begin{pmatrix} W_2 & 0 \end{pmatrix} \begin{pmatrix} x_2 \\ x_1 \end{pmatrix} + \begin{pmatrix} 0 \end{pmatrix} u = W_2 x_2
 $$
 
 
