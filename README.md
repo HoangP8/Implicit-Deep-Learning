@@ -23,18 +23,8 @@
 
 **Authors**: Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
 
-## Related Works 
-
-**Implicit Deep Learning** \
-[arxiv paper](https://arxiv.org/abs/1908.06315) \
-Laurent El Ghaoui, Fangda Gu, Bertrand Travacca, Armin Askari, Alicia Y. Tsai
-
-**State-driven Implicit Modeling for Sparsity and Robustness in Neural Networks** \
-[arxiv paper](https://arxiv.org/abs/2209.09389) \
-Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
-
 ## Introduction
-Implicit Deep Learning finds a hidden state $x$ by solving a fixed-point equation (Figure a), instead of stacking layers conventionally in feedforward network (Figure b). 
+Implicit Deep Learning finds a hidden state $x$ by solving a fixed-point equation (Figure b), instead of stacking layers conventionally in feedforward network (Figure a). 
 
 <p align="center">
   <img src="docs/assets/implicit.jpg" alt="implicit_figure" width="100%"><br>
@@ -64,18 +54,18 @@ This can be rewritten equivalently in matrix form as:
 
 $$
 \begin{aligned}
-x^\star &= \phi(A x + B u) 
+x^{\star} &= \phi(A x + B u) 
 = \phi \left(
 \begin{bmatrix} 0 & W_1 \\ 0 & 0 \end{bmatrix} 
 \begin{bmatrix} x_2 \\ x_1 \end{bmatrix} 
 + \begin{bmatrix} 0 \\ W_0 \end{bmatrix} u
-\right) \\
+\right) \\\\
 &= \phi \begin{bmatrix} W_1 x_1 \\ W_0 u \end{bmatrix} 
-= \begin{bmatrix} x_2 \\ x_1 \end{bmatrix}, \\[8pt]
-\hat{y} &= C x^\star + D u 
+= \begin{bmatrix} x_2 \\ x_1 \end{bmatrix}, \\\\[8pt]
+\hat{y} &= C x^{\star} + D u 
 = \begin{bmatrix} W_2 & 0 \end{bmatrix} 
 \begin{bmatrix} x_2 \\ x_1 \end{bmatrix} 
-+ \begin{bmatrix} 0 \end{bmatrix} u \\
++ \begin{bmatrix} 0 \end{bmatrix} u \\\\
 &= W_2 x_2.
 \end{aligned}
 $$
@@ -106,6 +96,15 @@ As opposed to the above figure, the typical implicit model does not have a clear
 
 To dive deeper into the motivation behind Implicit Models, check out this beginner-friendly article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). If you're curious about the math and technical details, the full framework is explained in [this journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
 
+## Related Works 
+
+**Implicit Deep Learning** \
+[SIAM journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517) \
+Laurent El Ghaoui, Fangda Gu, Bertrand Travacca, Armin Askari, Alicia Y. Tsai
+
+**State-driven Implicit Modeling for Sparsity and Robustness in Neural Networks** \
+[arxiv paper](https://arxiv.org/abs/2209.09389) \
+Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
 
 ## Installation
 <!-- - Install required packages by running:
@@ -122,14 +121,14 @@ To dive deeper into the motivation behind Implicit Models, check out this beginn
   pip install -e .
   ```
 
-## Quick tour
+## Quick Tour
 The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes the basic `ImplicitModel`, along with a special form for Implicit Recurrent Neural Networks `ImplicitRNN`, and a special state-driven training approach in `SIM`. 
 
-For a full breakdown of each model’s architecture and hyperparameters, check out the [documentation](link). Also check out the documentation to get to know all functionalities of our package.
+For a full breakdown of each model's architecture and hyperparameters, check out the [documentation](link). Also check out the documentation to get to know all functionalities of our package.
 
 ### Example: `ImplicitModel`
 
-Here’s how to use `ImplicitModel`, the most basic form of an implicit model:
+Here's how to use `ImplicitModel`, the most basic form of an implicit model:
 
 
 ```python
@@ -191,7 +190,7 @@ We already provide several solvers for `SIM`, including `ADMMSolver`, `ADMMMulti
 
 For more information on their hyperparameters, please refer to the [documentation](link).
 
-### Full instruction
+### Full Instruction
 To get familiar with the framework, start with our [Notebook tutorial](https://github.com/HoangP8/Implicit-Deep-Learning/blob/main/tutorial.ipynb). We also included a folder [examples](https://github.com/HoangP8/Implicit-Deep-Learning/tree/main/examples), which contains example uses for each model. For example, to run the IDL example, adjust the parameters in the script and execute:
 
   ```
@@ -202,24 +201,12 @@ To get familiar with the framework, start with our [Notebook tutorial](https://g
 ## Citation
 
 ```
-@article{el2021implicit,
-  title={Implicit deep learning},
-  author={El Ghaoui, Laurent and Gu, Fangda and Travacca, Bertrand and Askari, Armin and Tsai, Alicia},
-  journal={SIAM Journal on Mathematics of Data Science},
-  volume={3},
-  number={3},
-  pages={930--958},
-  year={2021},
-  publisher={SIAM}
-}
-
-```
-
-```
-@article{tsai2022state,
-  title={State-driven implicit modeling for sparsity and robustness in neural networks},
-  author={Tsai, Alicia Y and Decugis, Juliette and Ghaoui, Laurent El and Atamturk, Alper},
-  journal={arXiv preprint arXiv:2209.09389},
-  year={2022}
+@misc{idl,
+    author = {Hoang Phan and Bao Tran and Chi Nguyen and Bao Truong and Thanh Tran and Khai Nguyen and Alicia Y. Tsai and Hong Chu and Laurent El Ghaoui},
+    title = {Implicit Deep Learning Pytorch Package},
+    year = {2025},
+    publisher = {GitHub},
+    journal = {GitHub repository},
+    howpublished = {\url{https://github.com/HoangP8/Implicit-Deep-Learning}},
 }
 ```
