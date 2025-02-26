@@ -62,19 +62,7 @@ class ImplicitRNNCell(nn.Module):
 
 class ImplicitRNN(nn.Module):
     r""" 
-    Similar with `ImplicitModel`, here is an example of `ImplicitRNN`:
-    
-    >>> import torch
-    >>> from idl import ImplicitRNN
-    >>> 
-    >>> x = torch.randn(100, 60, 1)  # (batch_size=100, seq_len=60, input_dim=1)
-    >>> 
-    >>> model = ImplicitRNN(input_dim=1,  
-    >>>                     output_dim=1, 
-    >>>                     hidden_dim=128, 
-    >>>                     implicit_hidden_dim=64)
-    >>> 
-    >>> output = model(x)  # (batch_size=100, output_dim=1)
+    Implicit Recurrent Neural Networks.
     
     Args:
         input_dim (int): Number of input features (:math:`p`).

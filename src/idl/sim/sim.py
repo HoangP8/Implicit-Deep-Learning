@@ -141,7 +141,7 @@ class SIM():
     """
     def __init__(
         self,
-        activation_fn : Callable = nn.ReLU(),
+        activation_fn : Callable = nn.functional.relu,
         kappa : float = 0.99,
         atol : float = 1e-6,
         skip_layers : Optional[int] = None,

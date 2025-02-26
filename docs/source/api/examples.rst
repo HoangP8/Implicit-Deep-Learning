@@ -1,20 +1,21 @@
 Examples
 ========
 
-MNIST Classification
---------------------
+This section contains practical examples of using the IDL package.
 
-.. code-block:: python
+.. toctree::
+   :maxdepth: 10
+   :hidden:
 
-   from idl import ImplicitModel
-   import torch
-   import torchvision
+   examples/idl-mnist
+   examples/sim-mnist
 
-   # Load MNIST dataset
-   train_loader = torch.utils.data.DataLoader(
-       torchvision.datasets.MNIST('./data', train=True, download=True),
-       batch_size=32
-   )
+.. raw:: html
 
-   # Create and train model
-   model = ImplicitModel(hidden_dim=100, input_dim=784, output_dim=10)
+   <meta http-equiv="refresh" content="0; url=examples/idl-mnist.html">
+
+   <script>
+      window.location.href = "examples/idl-mnist.html";
+   </script>
+
+   <p>If you are not redirected automatically, follow this <a href="examples/idl-mnist.html">link to the MNIST example</a>.</p>

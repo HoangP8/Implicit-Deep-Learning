@@ -24,14 +24,13 @@
 **Authors**: Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
 
 ## Introduction
-Implicit Deep Learning finds a hidden state $x$ by solving a fixed-point equation (Figure b), instead of stacking layers conventionally in feedforward network (Figure a). 
+Implicit Deep Learning computes hidden states by solving fixed-point equations rather than through conventional feedforward propagation. This approach offers theoretical advantages in stability, memory efficiency, and expressivity.
 
 <p align="center">
   <img src="docs/assets/implicit.jpg" alt="implicit_figure" width="100%"><br>
 </p>
 
-
-Given input $u \in \mathbb{R}^p$ and output $y \in \mathbb{R}^q$, the model first finds the equilibrium hidden state $x \in \mathbb{R^n}$ by solving the fixed-point equation followed by prediction equation:
+Formally, given input $u \in \mathbb{R}^p$ and output $y \in \mathbb{R}^q$, the model computes the equilibrium hidden state $x \in \mathbb{R^n}$ by solving:
 
 $$
 \begin{cases}
@@ -42,15 +41,15 @@ x &= \phi(A x + B u), \quad &&\text{(Equilibrium equation)} \\
 \end{cases}
 $$
 
-where $\phi$ is a non-linear activation function (e.g., ReLU), and $A \in \mathbb{R}^{n \times n}, B \in \mathbb{R}^{n \times p}, C \in \mathbb{R}^{q \times n}, D \in \mathbb{R}^{q \times p}$ are model parameters.
+where $\phi$ is a non-linear activation function that satisfies the well-posedness condition (e.g., ReLU), and $A \in \mathbb{R}^{n \times n}, B \in \mathbb{R}^{n \times p}, C \in \mathbb{R}^{q \times n}, D \in \mathbb{R}^{q \times p}$ are learnable parameters.
 
-This form can theoretically capture the transformation of feedforward network. An example in Figure a, when we have a simple MLP with 2 hidden layers, the transformation of input $u$ to output $y$ is
+This formulation can theoretically represent any feedforward network. For example, a simple MLP with 2 hidden layers:
 
 $$
 x_1 = \phi(W_0u) \longrightarrow x_2=\phi(W_1x_1) \longrightarrow \hat{y}(u) = W_2 x_2.
 $$
 
-This can be rewritten equivalently in matrix form as:
+can be rewritten in matrix form as:
 
 $$x = \phi(A x + B u) = \phi \left( \left[\begin{array}{cc} 
 0 & W_1 \\
@@ -80,47 +79,10 @@ x_1
 0 
 \end{array}\right] u = W_2 x_2$$
 
-
-<!-- Implicit Deep Learning finds a hidden state $X$ by solving a fixed-point equation instead of explicitly stacking layers conventionally. Given a dataset with input matrix $U \in \mathbb{R}^{p\times m}$ and output matrix $Y \in \mathbb{R}^{q\times m}$, where each column represents an input or output vector and $m$ is the batch size, the implicit model uses the following equations: -->
-
-<!-- 1. State equation:
-
-$$X = \phi (AX + BU),$$
-
-2. Prediction equation:
-
-$$\hat{Y}(U) = CX + DU,$$
-
-where $\phi: \mathbb{R}^{n\times m} \to \mathbb{R}^{n\times m}$ is a nonlinear activation that is strictly increasing and component-wise non-expansive, such as ReLU, tanh or sigmoid. Matrices $A\in \mathbb{R}^{n\times n}$, $B\in \mathbb{R}^{n\times p}$, $C\in \mathbb{R}^{q\times n}$ and $D\in \mathbb{R}^{q\times p}$ are model parameters.
-
-For illustration, below is an implicit model equivalent to a 2-layer feedforward neural network.
-<p align="center">
-  <img src="docs/assets/ff-illus.jpg" alt="2-layer feedforward" width="80%"><br>
-</p>
-
-As opposed to the above figure, the typical implicit model does not have a clear hierarchical, layered structure.
-<p align="center">
-  <img src="docs/assets/im-illus.jpg" alt="typical implicit model" width="80%"><br> -->
-
-
-To dive deeper into the motivation behind Implicit Models, check out this beginner-friendly article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). If you're curious about the math and technical details, the full framework is explained in [this journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
-
-## Related Works 
-
-**Implicit Deep Learning** \
-[SIAM journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517) \
-Laurent El Ghaoui, Fangda Gu, Bertrand Travacca, Armin Askari, Alicia Y. Tsai
-
-**State-driven Implicit Modeling for Sparsity and Robustness in Neural Networks** \
-[arxiv paper](https://arxiv.org/abs/2209.09389) \
-Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
+For a conceptual introduction to Implicit Models, see this article on [Medium](https://medium.com/analytics-vidhya/what-is-implicit-deep-learning-9d94c67ec7b4). For mathematical foundations and technical details, refer to the [SIAM journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517).
 
 ## Installation
-<!-- - Install required packages by running:
-  ```
-  pip install -r requirements.txt
-  ``` -->
-- Through `pip`:
+- Via `pip`:
   ```
   pip install idl
   ```
@@ -131,80 +93,87 @@ Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
   ```
 
 ## Quick Tour
-The `idl` package makes it easy to experiment with all variants of implicit models using just a few lines of code. It includes the basic `ImplicitModel`, along with a special form for Implicit Recurrent Neural Networks `ImplicitRNN`, and a special state-driven training approach in `SIM`. 
-
-For a full breakdown of each model's architecture and hyperparameters, check out the [documentation](link). Also check out the documentation to get to know all functionalities of our package.
+The `idl` package provides a comprehensive framework for implementing and experimenting with implicit models. It includes the foundational `ImplicitModel`, the recurrent variant `ImplicitRNN`, and the state-driven training approach `SIM`. Below are simple examples of how to use each model. More details of the package including the theory and functions can be found in the [documentation](https://idl.readthedocs.io/en/latest/).
 
 ### Example: `ImplicitModel`
-
-Here's how to use `ImplicitModel`, the most basic form of an implicit model:
-
 
 ```python
 from idl import ImplicitModel
 
-# Normal data processing
-train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
+# Prepare your dataset
+train_loader, test_loader = ...  # Any PyTorch dataset
 
-# Define the Implicit Model
+# Initialize the model
 model = ImplicitModel(
-    hidden_dim=100,  # Size of the hidden dimension
-    input_dim=3072,  # Input dimension (e.g., 3*32*32 for CIFAR-10)
-    output_dim=10,   # Output dimension (e.g., 10 classes for CIFAR-10)
+    hidden_dim=100,  # Hidden state dimension
+    input_dim=3072,  # Input dimension
+    output_dim=10,   # Output dimension
 ).to(device)
 
-# Normal training loop
-optimizer = ...  # Choose optimizer (e.g., Adam, SGD)
-loss_fn = ...    # Choose loss function (e.g., Cross-Entropy, MSE)
+# Standard PyTorch training loop
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+criterion = torch.nn.CrossEntropyLoss()
 
-for _ in range(epoch): 
-    ...
-    optimizer.zero_grad()
-    loss = loss_fn(model(inputs), targets) 
-    loss.backward()  
-    optimizer.step()  
-    ...
+for epoch in range(num_epochs): 
+    for inputs, targets in train_loader:
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, targets) 
+        loss.backward()  
+        optimizer.step()
 ```
 
-For `ImplicitRNN`, the interface is similar to `ImplicitModel`.
+### Example: `SIM` (State-driven Implicit Modeling)
 
-### Example: `SIM`
-
-For state-driven training, a pretrained explicit neural network is required to synthesize the training data, and a convex optimization solver is required to solve the state-driven training problem. A basic example is shown below:
+SIM requires a pretrained explicit network to synthesize training data and a convex optimization solver:
 
 ```python
 import torch
 from idl.sim import SIM
 from idl.sim.solvers import CVXSolver
 
-# Normal data processing
-train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
+# Prepare your dataset
+train_loader, test_loader = ...
 
 # Load a pretrained explicit model
 explicit_model = MLP(input_dim, hidden_dim, output_dim).to(device)
 explicit_model.load_state_dict(torch.load('checkpoint.pt'))
 
-# Define SIM model
+# Initialize SIM model and solver
 sim = SIM(activation_fn=torch.nn.functional.relu, device=device)
-
-# Define optimization solver
 solver = CVXSolver()
 
-# Train and evaluate the SIM model
+# Train and evaluate
 sim.train(solver=solver, model=explicit_model, dataloader=train_loader)
 sim.evaluate(test_loader)
 ```
 
-We already provide several solvers for `SIM`, including `ADMMSolver`, `ADMMMultiGPUSolver` (for distributed training on several GPUs), `CVXSolver`, `ProjectedGDLowRankSolver` (training with projected gradient descent while enforcing the weight matrix A to be low-rank), and `LeastSquareSolver` (using `numpy.linalg.lstsq` while ignoring the well-posedness condition). Users can also implement their own solvers by inheriting from the `BaseSolver` class.
+The package provides multiple solvers including:
+- `CVXSolver`: Convex optimization solver
+- `ADMMSolver`: Standard ADMM implementation
+- `ADMMMultiGPUSolver`: Distributed training across multiple GPUs
+- `ProjectedGDLowRankSolver`: Projected gradient descent with low-rank constraints
+- `LeastSquareSolver`: Efficient least squares solver using `numpy.linalg.lstsq` (ignores well-posedness constraint)
 
-For more information on their hyperparameters, please refer to the [documentation](link).
+Besides, custom solvers can also be implemented by extending the `BaseSolver` class.
 
-### Full Instruction
-To get familiar with the framework, start with our [Notebook tutorial](https://github.com/HoangP8/Implicit-Deep-Learning/blob/main/tutorial.ipynb). We also included a folder [examples](https://github.com/HoangP8/Implicit-Deep-Learning/tree/main/examples), which contains example uses for each model. For example, to run the IDL example, adjust the parameters in the script and execute:
+## Documentation and Examples
+More details of the package are provided in the [documentation](https://idl.readthedocs.io/en/latest/). For a comprehensive introduction, see our [Notebook tutorial](https://github.com/HoangP8/Implicit-Deep-Learning/blob/main/tutorial.ipynb). The [examples](https://github.com/HoangP8/Implicit-Deep-Learning/tree/main/examples) directory contains implementation examples for each model variant.
 
-  ```
-  bash examples/idl/idl.sh
-  ```
+To run an example:
+```
+bash examples/idl/idl.sh
+```
+
+## Related Works 
+
+**Implicit Deep Learning** \
+[SIAM journal paper](https://epubs.siam.org/doi/abs/10.1137/20M1358517) \
+Laurent El Ghaoui, Fangda Gu, Bertrand Travacca, Armin Askari, Alicia Y. Tsai
+
+**State-driven Implicit Modeling for Sparsity and Robustness in Neural Networks** \
+[arxiv paper](https://arxiv.org/abs/2209.09389) \
+Alicia Y. Tsai, Juliette Decugis, Laurent El Ghaoui, Alper Atamtürk
 
 
 ## Citation

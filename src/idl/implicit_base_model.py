@@ -7,20 +7,11 @@ from .implicit_function import ImplicitFunctionInf, ImplicitFunction, transpose,
 
 class ImplicitModel(nn.Module):
     r""" 
+    The most basic form of an Implicit Model.
+    
     **Note**: In conventional deep learning, the batch size typically comes first for inputs :math:`U`, hidden states :math:`X`, and outputs :math:`Y`. 
     We follow this convention, but the model internally transposes these matrices to solve the fixed-point equation.
-    Users can input their data in the usual format, and the output will be returned in the standard format. Below is an example:
-
-    >>> import torch
-    >>> from idl import ImplicitModel
-    >>> 
-    >>> x = torch.randn(5, 64)  # (batch_size=5, input_dim=64)
-    >>> 
-    >>> model = ImplicitModel(input_dim=64,  
-    >>>                       output_dim=10, 
-    >>>                       hidden_dim=128)
-    >>> 
-    >>> output = model(x)  # (batch_size=5, output_dim=10)
+    Users can input their data in the usual format, and the output will be returned in the standard format. 
 
     Args:
         input_dim (int): Number of input features (:math:`p`).

@@ -14,7 +14,7 @@ Welcome to IDL Package
    api/sim
    api/examples
 
-IDL (Implicit Deep Learning) is a Python package that implements implicit deep learning models (with specialized attention mechanisms) and state-driven implicit models.
+IDL (Implicit Deep Learning) is a Python package that implements implicit deep learning models (with a specialized recurrent version) and the state-driven training approach.
 
 Key Features
 ------------

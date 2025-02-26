@@ -1,5 +1,3 @@
-.. _solver:
-
 Base Solver
 -----------
 

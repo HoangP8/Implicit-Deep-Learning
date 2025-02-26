@@ -1,7 +1,12 @@
 SIM (State-driven Implicit Models)
 ==================================
 
-A standard Implicit Model is modeled by the following equation:
+State-driven Implicit Modeling (SIM) is an advanced training methodology for implicit models, introduced in `"State-driven Implicit Models" <https://arxiv.org/abs/2209.09389>`_. SIM distills implicit models from pre-trained explicit networks by matching internal state representations.
+
+Theoretical Foundation
+----------------------
+
+A standard Implicit Model is defined by:
 
 .. math::
    \begin{aligned}
@@ -9,31 +14,39 @@ A standard Implicit Model is modeled by the following equation:
       \hat{Y} &= C X + D U \quad &\text{(Prediction equation)},
    \end{aligned}
 
-The State-driven training method (described in the paper `State-driven Implicit Models <https://arxiv.org/abs/2209.09389>`_) is a method to distill implicit models 
-from pre-trained explicit networks by matching the *internal state vectors* of the explicit networks.
+**SIM Training Objective:**
 
-Given an input matrix :math:`U \in \mathbb{R}^{p \times m}`, synthetic state matrices :math:`Z \in \mathbb{R}^{n \times m}` (the pre-activation vectors of the explicit networks), 
-:math:`X \in \mathbb{R}^{n \times m}` (the post-activation vectors of the explicit networks), and the synthetic output matrix :math:`\hat{Y} \in \mathbb{R}^{q \times m}`, 
-the SIM training method aims to solve the following convex optimization problem:
+Given:
+   - Input matrix :math:`U \in \mathbb{R}^{p \times m}`
+   - Synthetic pre-activation states :math:`Z \in \mathbb{R}^{n \times m}` from explicit network
+   - Synthetic post-activation states :math:`X \in \mathbb{R}^{n \times m}` from explicit network
+   - Synthetic outputs :math:`\hat{Y} \in \mathbb{R}^{q \times m}` from explicit network
+
+SIM solves the following convex optimization problem:
 
 .. math::
    \begin{aligned}
-      & \min_{M} \quad f(M)\\
-      & \text{s.t.} \quad
-      Z = AX + BU, \\
-      & \quad \quad \hat{Y} = CX + DU, \\
-      & \quad \quad \|A\|_\infty \leq \kappa.
+      & \min_{A,B,C,D} \quad f(A,B,C,D)\\
+      & \text{subject to:} \\
+      & \quad Z = AX + BU, \\
+      & \quad \hat{Y} = CX + DU, \\
+      & \quad \|A\|_\infty \leq \kappa,
    \end{aligned}
 
-Please refer to the paper for more details about the SIM training method. In order to train the implicicit model, we need to:
+where :math:`f` is an objective function that typically includes regularization terms to promote sparsity or other desirable properties.
 
-1. Define a SIM model that extracts the state vectors and initializes the problem.
-2. Create a solver to solve the convex optimization problem.
+Implementation Components
+-------------------------
 
-For the first phase, we abstracted all the necessary components into the :class:`idl.sim.sim.SIM` class.
+The SIM training process consists of two main phases:
 
-For the second phase, several solvers are already provided in the next sections. 
-However, you can also implement your own solver by inheriting from the :class:`idl.sim.solvers.solver.BaseSolver` class.
+1. **State Extraction**: The :class:`idl.sim.sim.SIM` class contains the method to extract internal state vectors from explicit networks and formulates the optimization problem.
+
+2. **Convex Optimization**: Various solvers are already provided in the next sections to solve the resulting optimization problem efficiently. Moreover, custom solvers can be applied by inheriting from the :class:`idl.sim.solvers.solver.BaseSolver` class.
+
+
+API Reference
+-------------
 
 .. autoclass:: idl.sim.sim.SIM
    :members:
@@ -60,11 +73,11 @@ Example usage:
    sim.train(solver=solver, model=explict_model, dataloader=dataloader)
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Components:
+   :maxdepth: 5
+   :caption: Subsections:
 
-   solvers/solver
-   solvers/admm
    solvers/cvx
+   solvers/admm
    solvers/ls
    solvers/gd
+   solvers/solver
