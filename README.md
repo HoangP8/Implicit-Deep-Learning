@@ -60,15 +60,17 @@ x_1
 \end{array}\right] + \left[\begin{array}{c} 
 0 \\
 W_0 
-\end{array}\right] u \right)$$
-
-$$= \phi \left[\begin{array}{c} 
+\end{array}\right] u \right)
+= \phi \left[\begin{array}{c} 
 W_1 x_1 \\
 W_0 u 
 \end{array}\right] = \left[\begin{array}{c} 
 x_2 \\
 x_1 
-\end{array}\right]$$
+\end{array}\right]
+$$
+
+
 
 $$\hat{y} = C x + D u = \left[\begin{array}{cc} 
 W_2 & 0 
