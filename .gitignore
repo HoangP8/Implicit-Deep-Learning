@@ -1,6 +1,8 @@
 examples/sim/models/
 examples/sim/data/
 data/
+docs/source/bao.rst
+docs/source/conf.py
 
 __pycache__/
 *.py[cod]
