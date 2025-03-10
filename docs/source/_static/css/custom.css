@@ -1,0 +1,99 @@
+.viewsource, .edit-this-page {
+    display: none;
+}
+
+.viewsource, .view-this-page {
+    display: none;
+}
+
+body {
+    zoom: 1.15;
+}
+
+
+h1 {
+    font-size: 36px;
+}
+
+h2 {
+    font-size: 28px;
+}
+
+.py .descclassname, /* Class names */
+.py .descname,      /* Function/method names */
+.py .sig-name,      /* Signatures */
+.code,              /* General code blocks */
+.literal,           /* Inline code */
+.xref,              /* Cross-references */
+.sig-paren,         /* Parentheses in method signatures */
+.sig-return {       /* Return type annotations */
+    font-family: 'Source Code Pro', monospace;
+    font-size: 14.5x; /* Consistent font size */
+    font-weight: normal; /* Default font weight */
+}
+
+.sidebar-brand-text {
+    font-size: 20px; 
+    font-weight: bold; 
+    font-family: 'Arial', sans-serif; 
+    text-align: center; 
+}
+
+body {
+    font-family: 'Calibri', sans-serif;}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Arial', sans-serif;
+}
+
+.toc-tree a {
+    font-size: 14px; /* Adjust this value as needed */
+}
+
+.py .descname {
+    font-weight: bold;
+}
+
+.sig-param {
+    font-family: 'Source Code Pro', monospace; /* Example of a different font */
+    font-size: 14.2px; /* Match the main font size */
+    font-weight: bold; /* Ensure parameters are not bold */
+}
+
+.py .descclassname {
+    color: #c60a0a; /* Purple for class names */
+}
+
+.py .descname {
+    color: #c60a0a; /* Green for function/method names */
+}
+
+.sig-name {
+    color: #0244c8; /* Blue for signatures */
+}
+
+.sig-param {
+    color: #8c8c8c; 
+}
+
+.sig-paren {
+    color: #05ca02; /* Gray for parentheses */
+}
+
+.sig-return {
+    color: #d73a49; /* Red for return types */
+}
+
+.xref {
+    color: #0366d6; /* Blue for cross-references */
+}
+
+
+a.headerlink {
+    visibility: hidden;
+    font-size: 0; /* Ensure no space is taken */
+}
+a.headerlink::after {
+    content: "🔗";
+    font-size: 13px;
+}

@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/idl"]
+
+[project]
+name = "torchidl"
+readme = "README.md"
+license = { file = "LICENSE" }
+version = "0.0.1"
+requires-python = ">=3.8"
+dependencies = [
+    "torch >= 1.13.0",
+    "torchvision >= 0.14.0",
+    "scipy>=1.11.4",
+    "cvxpy>=1.4.2", 
+    "numpy>=1.26.4",
+    "scikit-learn>=1.2.0",
+    "matplotlib>=3.7.0",
+    "mosek>=10.1.28",
+    "tqdm>=4.66.2",
+    "sphinx>=7.0.0",
+]
+
+authors = [
+    { name = "Hoang Phan", email = "21hoang.p@vinuni.edu.vn" },
+    { name = "Bao Tran", email = "21bao.tq@vinuni.edu.vn" },
+    { name = "Chi Nguyen", email = "22chi.nh@vinuni.edu.vn" },
+    { name = "Bao Truong", email = "21bao.tg@vinuni.edu.vn" },
+    { name = "Thanh Tran", email = "21thanh.tq@vinuni.edu.vn" },
+    { name = "Khai Nguyen", email = "khai.nx@vinuni.edu.vn" },
+    { name = "Hong Chu", email = "hong.ctm@vinuni.edu.vn" },
+    { name = "Laurent El Ghaoui", email = "laurent.eg@vinuni.edu.vn" },
+]
+maintainers = [
+    { name = "Hoang Phan", email = "21hoang.p@vinuni.edu.vn" },
+    { name = "Bao Tran", email = "21bao.tq@vinuni.edu.vn" },
+]
+description = "Official package of Implicit Deep Learning and State-driven Implicit Models"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+]
+
+[project.urls]
+Documentation = "https://implicit-deep-learning.readthedocs.io/en/latest/"
+Repository = "https://github.com/HoangP8/Implicit-Deep-Learning"
+Issues = "https://github.com/HoangP8/Implicit-Deep-Learning/issues"
+
+[project.optional-dependencies]
+docs = [
+    "sphinx>=7.0.0",
+    "sphinxemoji>=0.2.0",
+    "sphinx_copybutton>=0.5.0",
+    "sphinx_markdown_tables>=0.0.17",
+    "sphinx_autodoc_typehints>=1.22.0",
+    "furo>=2024.1.29",
+    "sphinx-autobuild>=2024.1.1"  # Add this line
+]
