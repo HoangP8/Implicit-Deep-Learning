@@ -102,12 +102,12 @@ For a conceptual introduction to Implicit Models, see this article on [Medium](h
   ```
 
 ## Quick Tour
-The `idl` package provides a comprehensive framework for implementing and experimenting with implicit models. It includes the foundational `ImplicitModel`, the recurrent variant `ImplicitRNN`, and the state-driven training approach `SIM`. Below are simple examples of how to use each model. More details of the package including the theory and functions can be found in the [documentation](https://implicit-deep-learning.readthedocs.io/en/latest/).
+The `torchidl` package provides a comprehensive framework for implementing and experimenting with implicit models. It includes the foundational `ImplicitModel`, the recurrent variant `ImplicitRNN`, and the state-driven training approach `SIM`. Below are simple examples of how to use each model. More details of the package including the theory and functions can be found in the [documentation](https://implicit-deep-learning.readthedocs.io/en/latest/).
 
 ### Example: `ImplicitModel`
 
 ```python
-from idl import ImplicitModel
+from torchidl import ImplicitModel
 
 # Prepare your dataset
 train_loader, test_loader = ...
@@ -144,8 +144,8 @@ For more details, see the [documentation](https://implicit-deep-learning.readthe
 
 ```python
 import torch
-from idl.sim import SIM
-from idl.sim.solvers import CVXSolver
+from torchidl import SIM
+from torchidl import CVXSolver
 
 # Prepare your dataset
 train_loader, test_loader = ...

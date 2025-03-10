@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/idl"]
+packages = ["src/torchidl"]
 
 [project]
 name = "torchidl"
 readme = "README.md"
 license = { file = "LICENSE" }
-version = "0.0.2"
+version = "0.0.4"
 requires-python = ">=3.10"
 dependencies = [
     "torch >= 1.13.0",
@@ -24,6 +24,7 @@ dependencies = [
     "sphinx>=7.0.0",
 ]
 
+packages = [{ include = "torchidl", from = "src" }]
 authors = [
     { name = "Hoang Phan", email = "21hoang.p@vinuni.edu.vn" },
     { name = "Bao Tran", email = "21bao.tq@vinuni.edu.vn" },
