@@ -1,5 +1,5 @@
 Base Solver
 -----------
 
-.. autoclass:: idl.sim.solvers.solver.BaseSolver
+.. autoclass:: torchidl.sim.solvers.solver.BaseSolver
    :members: solve

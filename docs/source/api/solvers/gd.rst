@@ -1,7 +1,7 @@
 Projected GD Solver with Low-rank Regularization
 ------------------------------------------------
 
-.. autoclass:: idl.sim.solvers.projected_gd_lowrank.ProjectedGDLowRankSolver
+.. autoclass:: torchidl.sim.solvers.projected_gd_lowrank.ProjectedGDLowRankSolver
    :members: solve
 
 Example usage:
@@ -9,8 +9,8 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl.sim import SIM
-   from idl.sim.solvers import ProjectedGDLowRankSolver
+   from torchidl import SIM
+   from torchidl import ProjectedGDLowRankSolver
 
    # Load dataset
    dataloader = ...

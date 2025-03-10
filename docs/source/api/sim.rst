@@ -61,8 +61,8 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl.sim import SIM
-   from idl.sim.solvers import CVXSolver
+   from torchidl import SIM
+   from torchidl import CVXSolver
 
    explicit_model = ...
    dataloader = ...

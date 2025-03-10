@@ -1,7 +1,7 @@
 Least Square Solver
 -------------------
 
-.. autoclass:: idl.sim.solvers.least_square.LeastSquareSolver
+.. autoclass:: torchidl.sim.solvers.least_square.LeastSquareSolver
    :members: solve
 
 Example usage:
@@ -9,8 +9,8 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl.sim import SIM
-   from idl.sim.solvers import LeastSquareSolver
+   from torchidl import SIM
+   from torchidl import LeastSquareSolver
 
    # Load dataset
    dataloader = ...

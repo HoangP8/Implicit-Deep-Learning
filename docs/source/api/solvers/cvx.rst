@@ -3,7 +3,7 @@ CVX Solver
 
 **Note**: In our experiments, we use the `MOSEK` solver which is not the default solver of CVXPY. It is powerful, but it requires a license and additional installation.
 
-.. autoclass:: idl.sim.solvers.cvx.CVXSolver
+.. autoclass:: torchidl.sim.solvers.cvx.CVXSolver
    :members: solve
 
 Example usage:
@@ -11,8 +11,8 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl.sim import SIM
-   from idl.sim.solvers import CVXSolver
+   from torchidl import SIM
+   from torchidl import CVXSolver
 
    # Load dataset
    dataloader = ...

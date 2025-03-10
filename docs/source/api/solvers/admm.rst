@@ -2,7 +2,7 @@ ADMM Solvers
 ------------
 
 Alternating Direction Method of Multipliers (ADMM) is a powerful optimization algorithm for solving constrained convex problems. 
-This section presents the derivation of ADMM update rules for SIM training. The algorithm is implemented in :func:`idl.sim.solvers.admm_consensus.ADMMSolver` and :func:`idl.sim.solvers.admm_consensus_multigpu.ADMMMultiGPUSolver`.
+This section presents the derivation of ADMM update rules for SIM training. The algorithm is implemented in :func:`torchidl.sim.solvers.admm_consensus.ADMMSolver` and :func:`idl.sim.solvers.admm_consensus_multigpu.ADMMMultiGPUSolver`.
 
 Introduction to ADMM
 ^^^^^^^^^^^^^^^^^^^^
@@ -194,10 +194,10 @@ The projection operation can be performed efficiently by projecting the first n 
 API Reference
 ^^^^^^^^^^^^^
 
-.. autoclass:: idl.sim.solvers.admm_consensus.ADMMSolver
+.. autoclass:: torchidl.sim.solvers.admm_consensus.ADMMSolver
    :members: solve
    
-.. autoclass:: idl.sim.solvers.admm_consensus_multigpu.ADMMMultiGPUSolver
+.. autoclass:: torchidl.sim.solvers.admm_consensus_multigpu.ADMMMultiGPUSolver
    :members: solve
 
 Example usage:
@@ -205,8 +205,8 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl.sim import SIM
-   from idl.sim.solvers import ADMMSolver
+   from torchidl import SIM
+   from torchidl import ADMMSolver
 
    # Load dataset
    dataloader = ...
