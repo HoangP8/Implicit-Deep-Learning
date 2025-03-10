@@ -93,7 +93,7 @@ For a conceptual introduction to Implicit Models, see this article on [Medium](h
 ## Installation
 - Via `pip`:
   ```
-  pip install idl
+  pip install torchidl
   ```
 - From source:
   ```
@@ -206,7 +206,7 @@ Alicia Y. Tsai
 ## Citation
 
 ```
-@misc{idl,
+@misc{torchidl,
     author = {Hoang Phan and Bao Tran and Chi Nguyen and Bao Truong and Thanh Tran and Khai Nguyen and Alicia Y. Tsai and Hong Chu and Laurent El Ghaoui},
     title = {Implicit Deep Learning Pytorch Package},
     year = {2025},
