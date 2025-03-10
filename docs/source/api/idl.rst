@@ -48,7 +48,7 @@ This constraint ensures the fixed-point iteration converges to a unique solution
 API Reference
 -------------
 
-.. autoclass:: idl.implicit_base_model.ImplicitModel
+.. autoclass:: torchidl.implicit_base_model.ImplicitModel
    :members:
    :undoc-members:
 
@@ -57,7 +57,7 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl import ImplicitModel
+   from torchidl import ImplicitModel
    
    x = torch.randn(5, 64)  # (batch_size=5, input_dim=64)
    

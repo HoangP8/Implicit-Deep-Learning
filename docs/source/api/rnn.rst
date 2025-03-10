@@ -37,7 +37,7 @@ where:
 API Reference
 -------------
 
-.. autoclass:: idl.implicit_rnn_model.ImplicitRNN
+.. autoclass:: torchidl.implicit_rnn_model.ImplicitRNN
    :members:
    :undoc-members:
 
@@ -46,7 +46,7 @@ Example usage:
 .. code-block:: python
 
    import torch
-   from idl import ImplicitRNN
+   from torchidl import ImplicitRNN
    
    x = torch.randn(100, 60, 1)  # (batch_size=100, seq_len=60, input_dim=1)
    

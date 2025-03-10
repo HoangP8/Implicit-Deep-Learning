@@ -52,7 +52,7 @@ The SIM training process consists of two main phases:
 API Reference
 -------------
 
-.. autoclass:: idl.sim.sim.SIM
+.. autoclass:: torchidl.sim.sim.SIM
    :members:
    :special-members: __call__
 

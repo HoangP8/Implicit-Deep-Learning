@@ -26,7 +26,7 @@ Install using pip:
 
 .. code-block:: bash
 
-   pip install idl
+   pip install torchidl
 
 Install from source:
 
@@ -43,7 +43,7 @@ Here's a simple example using `ImplicitModel`:
 
 .. code-block:: python
 
-   from idl import ImplicitModel
+   from torchidl import ImplicitModel
 
    # Normal data processing
    train_loader, test_loader = ...  # Any dataset users use (e.g., CIFAR10, time-series, ...)
