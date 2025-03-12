@@ -16,8 +16,6 @@
 
 
 <p align="center">
-  <a href="https://implicit-deep-learning.readthedocs.io/en/latest/"><b>Documentation</b></a> 
-  •
   <a href="https://github.com/HoangP8/Implicit-Deep-Learning/blob/main/tutorial.ipynb"><b>Quick Tutorial</b></a> 
   •
   <a href="https://github.com/HoangP8/Implicit-Deep-Learning?tab=readme-ov-file#installation"><b>Installation</b></a> 
