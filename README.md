@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Implicit Deep Learning Package</h1>
+  <h1>TorchIDL: Implicit Deep Learning package</h1>
 </div>
 
 <p align="center">
