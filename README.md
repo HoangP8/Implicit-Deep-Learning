@@ -26,7 +26,7 @@
 </p>
 
 
-**Authors**: Hoang Phan, [Bao Tran](https://www.linkedin.com/in/bao-tq/), Chi Nguyen, Bao Truong, Thanh Tran, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
+**Authors**: Hoang Phan, [Bao Tran](https://www.linkedin.com/in/bao-tq/), Thanh Tran, Khoa Dang, Chi Nguyen, Bao Truong, [Khai Nguyen](https://xkhainguyen.github.io/), [Alicia Y. Tsai](https://www.aliciatsai.com/), [Hong Chu](https://sites.google.com/view/hongtmchu), [Laurent El Ghaoui](https://people.eecs.berkeley.edu/~elghaoui/)
 
 ## Introduction
 Traditional feedforward neural networks compute hidden states by passing inputs sequentially through layers. In contrast, Implicit Deep Learning determines these hidden states by solving fixed-point equations. This approach offers theoretical advantages in stability, memory efficiency, and expressivity.

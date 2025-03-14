@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath('../../src'))
 # -- Project information -----------------------------------------------------
 
 project = 'Implicit Deep Learning'
-copyright = f'2025, Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, Khai Nguyen, Hong Chu, Alicia Y. Tsai, Laurent El Ghaoui'
+copyright = f'2025, Hoang Phan, Bao Tran, Thanh Tran, Khoa Dang, Chi Nguyen, Bao Truong, Khai Nguyen, Hong Chu, Alicia Y. Tsai, Laurent El Ghaoui'
 author = 'Hoang Phan, Bao Tran, Chi Nguyen, Bao Truong, Thanh Tran, Khai Nguyen, Hong Chu, Alicia Y. Tsai, Laurent El Ghaoui'
 release = '0.0.4'
 
